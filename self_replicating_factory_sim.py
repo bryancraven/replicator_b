@@ -1637,10 +1637,12 @@ class Task:
 class Factory:
     """Ultra-realistic self-replicating factory with all systems"""
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, spec_dict=None, resource_enum=None):
         self.config = config or CONFIG
         self.time = 0.0
         self.task_counter = 0
+        self.spec_dict = spec_dict
+        self.resource_enum = resource_enum
 
         # Logging
         self.log_entries = []
@@ -1648,22 +1650,42 @@ class Factory:
         # Module management
         self.module_states: Dict[str, ModuleState] = {}
 
-        # Initialize systems first (before modules that may use them)
-        self.transport_system = TransportSystem(self.config)
-        self.waste_stream = WasteStream()
-        self.software_system = SoftwareProductionSystem()
-        self.thermal_system = ThermalManagementSystem(self.config)
-        self.cleanroom_environments = {}
+        # Initialize systems - use dynamic if spec provided, otherwise default
+        if spec_dict and resource_enum and 'subsystem_data' in spec_dict:
+            # Use dynamic subsystems from spec
+            from dynamic_subsystems import SubsystemFactory
+            subsystem_factory = SubsystemFactory(spec=spec_dict, resource_enum=resource_enum)
+            self.transport_system = TransportSystem(self.config)  # Keep default for now
+            self.waste_stream = subsystem_factory.create_waste_stream()
+            self.software_system = subsystem_factory.create_software_system()
+            self.thermal_system = ThermalManagementSystem(self.config)  # Keep default for now
+            self.cleanroom_environments = {}
 
-        # Now initialize modules (after systems are ready)
-        self.initialize_modules()
+            # Now initialize modules (after systems are ready)
+            self.initialize_modules()
 
-        # Storage system
-        self.storage = StorageSystem(
-            total_volume_m3=self.config["max_storage_volume_m3"],
-            total_weight_capacity_tons=self.config["max_storage_weight_tons"],
-            enabled=self.config.get("enable_storage_limits", True)
-        )
+            # Storage system with dynamic configuration
+            self.storage = subsystem_factory.create_storage_system(
+                total_volume_m3=self.config["max_storage_volume_m3"],
+                total_weight_capacity_tons=self.config["max_storage_weight_tons"]
+            )
+        else:
+            # Use default subsystems for backward compatibility
+            self.transport_system = TransportSystem(self.config)
+            self.waste_stream = WasteStream()
+            self.software_system = SoftwareProductionSystem()
+            self.thermal_system = ThermalManagementSystem(self.config)
+            self.cleanroom_environments = {}
+
+            # Now initialize modules (after systems are ready)
+            self.initialize_modules()
+
+            # Storage system
+            self.storage = StorageSystem(
+                total_volume_m3=self.config["max_storage_volume_m3"],
+                total_weight_capacity_tons=self.config["max_storage_weight_tons"],
+                enabled=self.config.get("enable_storage_limits", True)
+            )
 
         # Energy system  
         self.energy_system = EnergySystem(self.config)
@@ -2329,24 +2351,34 @@ class Factory:
         print("-" * 40)
 
         # Create production tasks for all factory modules
-        module_types = [
-            ResourceType.MINING_MODULE,
-            ResourceType.REFINING_MODULE,
-            ResourceType.CHEMICAL_MODULE,
-            ResourceType.ELECTRONICS_MODULE,
-            ResourceType.MECHANICAL_MODULE,
-            ResourceType.CNC_MODULE,
-            ResourceType.LASER_MODULE,
-            ResourceType.CLEANROOM_MODULE,
-            ResourceType.ASSEMBLY_MODULE,
-            ResourceType.SOFTWARE_MODULE,
-            ResourceType.TRANSPORT_MODULE,
-            ResourceType.RECYCLING_MODULE,
-            ResourceType.TESTING_MODULE,
-            ResourceType.THERMAL_MODULE,
-            ResourceType.POWER_MODULE,
-            ResourceType.CONTROL_MODULE
-        ]
+        if self.spec_dict and 'target_modules' in self.spec_dict and self.spec_dict['target_modules']:
+            # Use modules defined in spec
+            module_types = []
+            for module_name in self.spec_dict['target_modules']:
+                if hasattr(self.resource_enum, module_name):
+                    module_types.append(getattr(self.resource_enum, module_name))
+                else:
+                    print(f"  Warning: Module {module_name} not found in resource enum")
+        else:
+            # Use default module list for backward compatibility
+            module_types = [
+                ResourceType.MINING_MODULE,
+                ResourceType.REFINING_MODULE,
+                ResourceType.CHEMICAL_MODULE,
+                ResourceType.ELECTRONICS_MODULE,
+                ResourceType.MECHANICAL_MODULE,
+                ResourceType.CNC_MODULE,
+                ResourceType.LASER_MODULE,
+                ResourceType.CLEANROOM_MODULE,
+                ResourceType.ASSEMBLY_MODULE,
+                ResourceType.SOFTWARE_MODULE,
+                ResourceType.TRANSPORT_MODULE,
+                ResourceType.RECYCLING_MODULE,
+                ResourceType.TESTING_MODULE,
+                ResourceType.THERMAL_MODULE,
+                ResourceType.POWER_MODULE,
+                ResourceType.CONTROL_MODULE
+            ]
 
         for module in module_types:
             task = self.create_production_task(module, 1, priority=1)
@@ -2614,6 +2646,8 @@ def main():
     config = CONFIG.copy()
     recipes = RECIPES_DEFAULT
     module_specs = MODULE_SPECS_DEFAULT
+    spec_dict = None
+    resource_enum_for_factory = None
 
     if args.spec:
         try:
@@ -2626,6 +2660,7 @@ def main():
             # Create dynamic ResourceType enum from spec
             global ResourceType
             ResourceType = loader.create_resource_enum(spec)
+            resource_enum_for_factory = ResourceType
 
             # Create recipes and module specs from spec
             recipes = loader.create_recipes(spec, ResourceType)
@@ -2633,6 +2668,13 @@ def main():
 
             # Create config from spec
             config = loader.create_config(spec, args.profile)
+
+            # Create spec dict for Factory
+            spec_dict = {
+                'subsystem_data': spec.subsystem_data,
+                'resources': spec.resources,
+                'target_modules': spec.target_modules
+            }
 
             # Update global references
             global RECIPES, MODULE_SPECS
@@ -2645,14 +2687,16 @@ def main():
             print(f"Modules: {len(module_specs)}")
             if args.profile:
                 print(f"Profile: {args.profile}")
+            if spec.subsystem_data:
+                print(f"Dynamic subsystems: ENABLED")
         except ImportError:
             print("Warning: spec_loader module not found, using default configuration")
         except Exception as e:
             print(f"Error loading spec: {e}")
             print("Falling back to default configuration")
 
-    # Run simulation
-    factory = Factory(config)
+    # Run simulation with spec data if available
+    factory = Factory(config, spec_dict=spec_dict, resource_enum=resource_enum_for_factory)
     results = factory.run_simulation(max_hours=args.max_hours)
 
     # Save results

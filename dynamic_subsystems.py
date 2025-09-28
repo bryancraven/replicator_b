@@ -380,9 +380,10 @@ class DynamicStorageSystem:
             resource_name = resource.value.upper()
             if resource_name in self.config['spec_resources']:
                 spec_props = self.config['spec_resources'][resource_name]
-                density = spec_props.get('density', 1.0)
-                temp = spec_props.get('storage_temp', 25)
-                contamination = spec_props.get('contamination_sensitivity', 0.5)
+                # spec_props is a ResourceSpec dataclass, not a dict
+                density = getattr(spec_props, 'density', 1.0)
+                temp = getattr(spec_props, 'storage_temp', 25)
+                contamination = getattr(spec_props, 'contamination_sensitivity', 0.5)
                 return (density, temp, contamination)
 
         # Default fallback

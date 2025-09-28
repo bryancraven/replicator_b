@@ -507,6 +507,13 @@
       "battery_charge": 200
     }
   },
+  "target_modules": [
+    "MINING_MODULE",
+    "REFINING_MODULE",
+    "ELECTRONICS_MODULE",
+    "ASSEMBLY_MODULE",
+    "POWER_MODULE"
+  ],
   "constraints": {
     "initial_solar_capacity_kw": 200,
     "solar_panel_efficiency": 0.25,

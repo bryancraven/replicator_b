@@ -87,6 +87,7 @@ class FactorySpec:
     subsystems: Dict[str, Any]
     profiles: Dict[str, Any] = field(default_factory=dict)
     subsystem_data: Dict[str, Any] = field(default_factory=dict)
+    target_modules: List[str] = field(default_factory=list)
 
 
 # ===============================================================================
@@ -200,7 +201,8 @@ class SpecLoader:
             constraints=spec_data.get('constraints', {}),
             subsystems=spec_data.get('subsystems', {}),
             profiles=spec_data.get('profiles', {}),
-            subsystem_data=spec_data.get('subsystem_data', {})
+            subsystem_data=spec_data.get('subsystem_data', {}),
+            target_modules=spec_data.get('target_modules', [])
         )
 
     def _validate_spec(self, spec: FactorySpec):
