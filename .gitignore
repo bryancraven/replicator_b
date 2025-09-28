@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Simulation outputs (regenerated on each run)
+factory_simulation_log.json
+factory_simulation_analysis.png
+factory_simulation_analysis_enhanced.png
+checkpoint_*.json
+simulation_state.json
+final_factory_state.json
+
+# Test files
+test_*.py
+*_test.py
+
+# Local configuration overrides
+configs/local_*.json
+configs/my_*.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Documentation builds
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Log files
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local

@@ -1,0 +1,151 @@
+{
+  "base": {
+    "factory_area_m2": 20000,
+    "simulation_name": "Ultra-Realistic Modular Factory"
+  },
+  "subsystems": {
+    "transport": {
+      "enabled": true,
+      "agv_fleet_size": 10,
+      "conveyor_length_m": 500,
+      "routing_algorithm": "dijkstra",
+      "enable_transport_time": true,
+      "max_concurrent_transports": 20,
+      "agv_battery_capacity": 100,
+      "agv_charging_rate": 20,
+      "transport_speed_mps": 2.0
+    },
+    "waste": {
+      "enabled": true,
+      "recycling_efficiency": 0.75,
+      "enable_waste_recycling": true,
+      "waste_processing_rate": 100,
+      "recyclable_types": [
+        "STEEL", "ALUMINUM", "COPPER", "PLASTIC", "GLASS"
+      ],
+      "hazardous_handling": true
+    },
+    "thermal": {
+      "enabled": true,
+      "ambient_temperature": 25,
+      "enable_thermal_management": true,
+      "cooling_capacity_kw": 1000,
+      "cooling_cop": 3.5,
+      "thermal_mass": 50000,
+      "heat_dissipation_rate": 0.1,
+      "critical_temperature": 85
+    },
+    "software": {
+      "enabled": true,
+      "enable_software_production": true,
+      "base_development_hours": 100,
+      "bug_introduction_rate": 0.1,
+      "bug_fix_rate": 0.3,
+      "code_review_effectiveness": 0.8,
+      "version_control": true,
+      "ci_cd_pipeline": true
+    },
+    "cleanroom": {
+      "enabled": true,
+      "cleanroom_class": 1000,
+      "enable_contamination": true,
+      "cleaning_interval_hours": 24,
+      "particle_generation_rate": 100,
+      "filter_efficiency": 0.999,
+      "air_changes_per_hour": 20
+    },
+    "storage": {
+      "enabled": true,
+      "max_storage_volume_m3": 15000,
+      "max_storage_weight_tons": 10000,
+      "enable_storage_limits": true,
+      "warehouse_zones": 5,
+      "automated_retrieval": true,
+      "inventory_tracking": "rfid"
+    },
+    "energy": {
+      "enabled": true,
+      "solar_capacity_kw": 100,
+      "panel_efficiency": 0.22,
+      "battery_efficiency": 0.95,
+      "battery_capacity_kwh": 500,
+      "latitude": 35.0,
+      "cloud_cover": 0.3,
+      "enable_weather": true,
+      "grid_connection": false,
+      "renewable_only": true
+    }
+  },
+  "profiles": {
+    "high_throughput": {
+      "description": "Optimized for maximum production rate",
+      "base": {
+        "factory_area_m2": 30000
+      },
+      "subsystems": {
+        "transport": {
+          "agv_fleet_size": 20,
+          "transport_speed_mps": 3.0
+        },
+        "energy": {
+          "solar_capacity_kw": 500,
+          "battery_capacity_kwh": 2000
+        },
+        "storage": {
+          "max_storage_volume_m3": 25000
+        }
+      }
+    },
+    "energy_efficient": {
+      "description": "Minimized energy consumption",
+      "subsystems": {
+        "thermal": {
+          "cooling_cop": 4.5,
+          "heat_dissipation_rate": 0.15
+        },
+        "transport": {
+          "transport_speed_mps": 1.5,
+          "agv_battery_capacity": 150
+        },
+        "cleanroom": {
+          "air_changes_per_hour": 15
+        }
+      }
+    },
+    "high_quality": {
+      "description": "Maximum quality and reliability",
+      "subsystems": {
+        "cleanroom": {
+          "cleanroom_class": 100,
+          "filter_efficiency": 0.9999,
+          "air_changes_per_hour": 30
+        },
+        "software": {
+          "bug_introduction_rate": 0.05,
+          "bug_fix_rate": 0.5,
+          "code_review_effectiveness": 0.95
+        },
+        "waste": {
+          "recycling_efficiency": 0.9
+        }
+      }
+    },
+    "experimental": {
+      "description": "Testing new subsystem configurations",
+      "subsystems": {
+        "transport": {
+          "routing_algorithm": "genetic",
+          "agv_fleet_size": 15
+        },
+        "thermal": {
+          "cooling_capacity_kw": 2000
+        },
+        "energy": {
+          "solar_capacity_kw": 1000,
+          "panel_efficiency": 0.30,
+          "grid_connection": true
+        }
+      }
+    }
+  }
+}
