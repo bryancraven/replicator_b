@@ -307,6 +307,14 @@ resources:
     density: 4.5
     storage_temp: 25
     contamination_sensitivity: 0.4
+  VALVE:
+    density: 4.0
+    storage_temp: 25
+    contamination_sensitivity: 0.3
+  REFRIGERANT_CIRCUIT:
+    density: 3.5
+    storage_temp: 15
+    contamination_sensitivity: 0.5
 
   # PCB and connections
   PCB_SUBSTRATE:
