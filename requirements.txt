@@ -1,6 +1,9 @@
 # Core simulation (no dependencies required)
 # The main simulation runs with Python 3.x standard library only
 
+# Optional: For using YAML spec files (.spec, .yaml)
+pyyaml>=6.0
+
 # Optional: For visualization and analysis
 matplotlib>=3.5.0
 

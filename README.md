@@ -22,6 +22,17 @@ The detailed model reveals that autonomous replication requires approximately 2-
 
 ## 🚀 Quick Start
 
+### Installation
+```bash
+# No dependencies required for core simulation
+python3 self_replicating_factory_sim.py
+
+# Optional: Install dependencies for full features
+pip3 install -r requirements.txt
+# - pyyaml: For YAML spec files (.spec, .yaml)
+# - matplotlib: For visualization graphs
+```
+
 ### Traditional Simulation
 ```bash
 # Quick automated run (sets up venv, runs simulation & analysis)
@@ -29,8 +40,8 @@ The detailed model reveals that autonomous replication requires approximately 2-
 
 # Or run manually:
 python3 self_replicating_factory_sim.py
-python3 analyze_factory_sim.py
-python3 visualize_factory_system.py
+python3 analyze_factory_sim.py  # Requires matplotlib
+python3 visualize_factory_system.py  # Requires matplotlib
 ```
 
 ### Spec-Based Configuration (NEW)
@@ -44,8 +55,8 @@ python3 self_replicating_factory_sim.py --spec minimal.json --max-hours 100
 # Use spec with profile (high_throughput, energy_efficient, etc.)
 python3 self_replicating_factory_sim.py --spec minimal.json --profile fast_simulation
 
-# Custom output file
-python3 self_replicating_factory_sim.py --spec specs/default.spec --output results.json
+# Use the full ultra-realistic spec (requires PyYAML)
+python3 self_replicating_factory_sim.py --spec default.spec --output results.json
 ```
 
 ### Modular Architecture (NEW)
@@ -84,7 +95,7 @@ result = factory.run_simulation(max_hours=1000)
 - `CLAUDE.md` - Development guide for Claude Code
 - `README.md` - This file
 - `SPEC_FORMAT.md` - Complete spec system format documentation
-- `DYNAMIC_SUBSYSTEMS_PLAN.md` - Plan for making subsystems fully dynamic
+- `docs/archive/` - Completed implementation plans and historical docs
 
 ### Spec System
 - `spec_loader.py` - Dynamic spec loading and validation system
@@ -531,7 +542,7 @@ This simulation provides a testbed for:
 
 ## 🔮 Future Enhancements
 
-- **Dynamic Subsystems**: Fully dynamic subsystems without hardcoded resources (see `DYNAMIC_SUBSYSTEMS_PLAN.md`)
+- **Dynamic Subsystems**: ✅ Completed - subsystems now configurable via spec files
 - **Spatial Layout**: 2D/3D factory floor optimization
 - **Economic Modeling**: Cost optimization and market dynamics
 - **Learning Curves**: Efficiency improvements over time
