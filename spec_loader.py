@@ -107,7 +107,9 @@ class SpecLoader:
         """Load a spec file and resolve any inheritance"""
         # Resolve full path
         if not os.path.isabs(spec_path):
-            spec_path = os.path.join(self.spec_dir, spec_path)
+            # If path already contains 'specs/', don't add it again
+            if not spec_path.startswith('specs/') and not os.path.exists(spec_path):
+                spec_path = os.path.join(self.spec_dir, spec_path)
 
         # Check if already loaded
         if spec_path in self.loaded_specs:
@@ -175,7 +177,10 @@ class SpecLoader:
         # Parse resources
         resources = {}
         for name, props in spec_data.get('resources', {}).items():
-            if isinstance(props, dict):
+            if isinstance(props, ResourceSpec):
+                # Already parsed (from parent spec)
+                resources[name] = props
+            elif isinstance(props, dict):
                 resources[name] = ResourceSpec(name=name, **props)
             else:
                 resources[name] = ResourceSpec(name=name)
@@ -183,12 +188,21 @@ class SpecLoader:
         # Parse recipes
         recipes = []
         for recipe_data in spec_data.get('recipes', []):
-            recipes.append(RecipeSpec(**recipe_data))
+            if isinstance(recipe_data, RecipeSpec):
+                # Already parsed (from parent spec)
+                recipes.append(recipe_data)
+            elif isinstance(recipe_data, dict):
+                recipes.append(RecipeSpec(**recipe_data))
+            else:
+                raise ValueError(f"Invalid recipe data type: {type(recipe_data)}")
 
         # Parse modules
         modules = {}
         for name, props in spec_data.get('modules', {}).items():
-            if isinstance(props, dict):
+            if isinstance(props, ModuleSpecData):
+                # Already parsed (from parent spec)
+                modules[name] = props
+            elif isinstance(props, dict):
                 modules[name] = ModuleSpecData(module_type=name, **props)
             else:
                 modules[name] = ModuleSpecData(module_type=name)

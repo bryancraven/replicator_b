@@ -11,6 +11,9 @@ from spec_loader import SpecLoader, FactorySpec
 from modular_factory_adapter import ModularFactory
 from modular_framework import SubsystemRegistry, UpdateStrategy, SubsystemConfig
 
+# Import custom subsystems to register them
+import custom_subsystems
+
 
 def create_factory_from_spec(spec_path: str,
                             profile: Optional[str] = None,
@@ -49,11 +52,17 @@ def create_factory_from_spec(spec_path: str,
 
     # Create the modular factory
     print(f"Creating ModularFactory from spec: {spec.metadata.get('name', 'Unknown')}")
-    factory = ModularFactory(config)
+    # ModularFactory expects orchestrator and config_manager, not config dict
+    from modular_framework import ConfigManager
+    config_manager = ConfigManager(base_config=config)
+    factory = ModularFactory(config_manager=config_manager)
 
     # Add spec-defined subsystem implementations
     if spec.subsystem_implementations:
         print(f"Configuring {len(spec.subsystem_implementations)} custom subsystems:")
+
+        # Clear default subsystems first if we're replacing them with spec-defined ones
+        factory.orchestrator.subsystems.clear()
 
         for role, impl_name in spec.subsystem_implementations.items():
             try:
