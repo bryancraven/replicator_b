@@ -419,6 +419,16 @@ completed = data["completed_tasks"]
 blocked = [e for e in data["log_entries"] if "blocked" in e["message"]]
 ```
 
+## Future Work: Dynamic Subsystems
+
+A comprehensive plan exists in `DYNAMIC_SUBSYSTEMS_PLAN.md` to make all subsystems fully dynamic, eliminating hardcoded ResourceType references. This will enable:
+- Complete flexibility in defining custom resource sets
+- Subsystem configurations in spec files
+- Better maintainability and testing
+- Full backward compatibility
+
+The plan involves creating dynamic wrapper classes, updating the spec format, and implementing a subsystem factory pattern.
+
 ## Important Implementation Details
 
 ### Task States (5 possible states)
