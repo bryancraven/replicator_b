@@ -573,6 +573,53 @@
       "average_cloud_cover": 0.2
     }
   },
+  "subsystem_data": {
+    "waste_stream": {
+      "recyclable_materials": {
+        "STEEL": 0.95,
+        "COPPER_WIRE": 0.85,
+        "PLASTIC": 0.60,
+        "GLASS": 0.80
+      }
+    },
+    "software_production": {
+      "bug_rates": {
+        "PLC_PROGRAM": 0.05,
+        "ROBOT_FIRMWARE": 0.08,
+        "AI_MODEL": 0.15,
+        "SCADA_SYSTEM": 0.10
+      }
+    },
+    "storage": {
+      "material_properties": {
+        "IRON_ORE": {
+          "density": 4.0,
+          "storage_temp": 25,
+          "contamination_sensitivity": 0.1
+        },
+        "SILICON_ORE": {
+          "density": 2.3,
+          "storage_temp": 25,
+          "contamination_sensitivity": 0.1
+        },
+        "STEEL": {
+          "density": 7.8,
+          "storage_temp": 25,
+          "contamination_sensitivity": 0.1
+        },
+        "SILICON_WAFER": {
+          "density": 2.3,
+          "storage_temp": 22,
+          "contamination_sensitivity": 1.0
+        },
+        "INTEGRATED_CIRCUIT": {
+          "density": 0.2,
+          "storage_temp": 22,
+          "contamination_sensitivity": 1.0
+        }
+      }
+    }
+  },
   "profiles": {
     "fast_simulation": {
       "description": "Optimized for quick simulation runs",
