@@ -957,5 +957,95 @@ profiles:
     enable_quality_control: true
     learning_curve_factor: 0.90
 
+  experimental:
+    description: "Advanced AI-driven subsystems with genetic algorithms and smart grid"
+    # Enable advanced subsystems for this profile
+    subsystem_implementations:
+      transport: "genetic_routing"
+      energy: "smart_grid"
+      quality_control: "spc_quality"
+      maintenance: "predictive_maintenance"
+    # Enhanced performance parameters
+    parallel_processing_limit: 25
+    processing_speed_multiplier: 1.3
+    initial_solar_capacity_kw: 300
+    # Advanced subsystem configurations
+    subsystem_data:
+      transport:
+        population_size: 100
+        mutation_rate: 0.15
+        crossover_rate: 0.7
+        selection_pressure: 2.0
+      energy:
+        grid_connection: true
+        battery_strategy: "economic"
+        demand_response: true
+        renewable_forecasting: true
+      quality_control:
+        control_limits_sigma: 3.0
+        sample_size: 10
+        alert_threshold: 0.05
+      maintenance:
+        prediction_horizon_hours: 168
+        alert_threshold: 0.8
+        enable_prognostics: true
+
 # Recipes are in default_recipes.yaml - loaded automatically
 recipes_file: default_recipes.yaml
+
+# Subsystem implementations for modular architecture
+# Uses standard wrappers for core systems with optional advanced subsystems
+subsystem_implementations:
+  transport: "transport_wrapper"
+  waste: "waste_wrapper"
+  thermal: "thermal_wrapper"
+  software: "software_wrapper"
+  cleanroom: "cleanroom_wrapper"
+  storage: "storage_wrapper"
+  energy: "energy_wrapper"
+  # Optional: advanced subsystems (commented out by default)
+  # predictive_maintenance: "predictive_maintenance"
+  # quality_control: "spc_quality"
+
+# Configuration data for subsystems when using modular mode
+subsystem_data:
+  transport:
+    # Standard transport configuration
+    agv_fleet_size: 10
+    routing_algorithm: "dijkstra"
+    enable_transport_time: true
+
+  waste:
+    # Waste management configuration
+    enable_waste_recycling: true
+    recycling_efficiency: 0.75
+
+  thermal:
+    # Thermal management configuration
+    ambient_temperature: 25
+    enable_thermal_management: true
+
+  software:
+    # Software production configuration
+    enable_software_production: true
+    bug_rate_base: 0.05
+
+  cleanroom:
+    # Cleanroom configuration
+    cleanroom_class: 1000
+    enable_contamination: true
+
+  storage:
+    # Storage system configuration
+    max_storage_volume_m3: 15000
+    max_storage_weight_tons: 10000
+    enable_storage_limits: true
+
+  energy:
+    # Energy system configuration
+    initial_solar_capacity_kw: 100
+    solar_panel_efficiency: 0.22
+    battery_efficiency: 0.95
+    enable_weather: true
+    latitude: 35.0
+    average_cloud_cover: 0.3

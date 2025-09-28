@@ -20,16 +20,32 @@ python3 self_replicating_factory_sim.py --spec specs/default.spec --profile high
 
 # Custom parameters
 python3 self_replicating_factory_sim.py --spec specs/minimal.spec --max-hours 5000 --output results.json
+
+# Use modular architecture with spec-defined subsystems (NEW)
+python3 self_replicating_factory_sim.py --spec specs/genetic_optimized.json --modular
 ```
 
 ### Available Specs
 
 - **`specs/default.spec`**: Ultra-realistic factory with 250+ components and 16 modules
 - **`specs/minimal.spec`**: Simplified factory with ~50 components for faster simulation
+- **`specs/genetic_optimized.json`**: Factory using genetic algorithms and ML optimization (modular)
+- **`specs/high_reliability.json`**: Factory optimized for maximum uptime and reliability (modular)
+- **`specs/energy_focused.json`**: Smart grid integrated factory with renewable optimization (modular)
 
 ## Spec File Structure
 
 A spec file contains the following sections:
+
+1. Metadata - Name, version, description, inheritance
+2. Resources - Materials, components, products
+3. Recipes - Production chains and transformations
+4. Modules - Production module specifications
+5. Initial State - Starting conditions
+6. Constraints - Global factory parameters
+7. Subsystems - Subsystem configurations
+8. Profiles - Configuration variations
+9. Subsystem Implementations (NEW) - Specify which subsystem implementations to use
 
 ### 1. Metadata
 
@@ -184,6 +200,65 @@ profiles:
     solar_panel_efficiency: 0.25
 ```
 
+### 9. Subsystem Implementations (NEW)
+
+Define which subsystem implementations to use for complete behavioral configuration:
+
+```yaml
+subsystem_implementations:
+  transport: "genetic_routing"        # Genetic algorithm-based routing
+  maintenance: "predictive_maintenance"  # ML-based predictive maintenance
+  quality: "spc_quality"              # Statistical process control
+  energy: "smart_grid"                # Smart grid with demand response
+  monitoring: "digital_twin"          # Predictive digital twin simulation
+```
+
+Available implementations include:
+
+**Transport Systems:**
+- `transport_wrapper` - Default transport system
+- `genetic_routing` - Genetic algorithm optimization
+- `swarm_transport` - Swarm intelligence coordination
+- `adaptive_transport` - Learning-based adaptation
+
+**Maintenance Systems:**
+- `predictive_maintenance` - ML-based failure prediction
+
+**Quality Control:**
+- `spc_quality` - Statistical process control
+- `ml_quality` - Machine learning quality control
+
+**Energy Systems:**
+- `energy_wrapper` - Default energy system
+- `smart_grid` - Smart grid with demand response
+- `renewable_optimizer` - Multi-source renewable optimization
+
+**Monitoring:**
+- `digital_twin` - Predictive simulation and optimization
+
+This feature enables complete factory configuration without writing Python code. When using `--modular` flag, the specified subsystems will be instantiated and configured using the corresponding `subsystem_data` section.
+
+### 10. Subsystem Data
+
+Configure the behavior of custom subsystem implementations:
+
+```yaml
+subsystem_data:
+  transport:
+    population_size: 100       # For genetic_routing
+    mutation_rate: 0.15
+    crossover_rate: 0.7
+
+  maintenance:
+    failure_threshold: 0.8     # For predictive_maintenance
+    predictive_horizon_hours: 168
+
+  energy:
+    grid_connection: true      # For smart_grid
+    grid_buy_price: 0.12
+    demand_response: true
+```
+
 ## Advanced Features
 
 ### Inheritance
@@ -310,6 +385,90 @@ profiles:
     quality_base_rate: 0.9999
 ```
 
+## Example: Complete Factory Without Python Code (NEW)
+
+With the subsystem_implementations feature, you can now define a complete factory including both WHAT exists (resources, recipes) and HOW it behaves (subsystem implementations) entirely through specs:
+
+```yaml
+metadata:
+  name: "AI-Optimized Smart Factory"
+  version: "2.0.0"
+  description: "Fully autonomous factory using AI and ML optimization"
+  parent: "minimal.json"  # Inherit basic resources and recipes
+
+# Define which subsystem implementations to use
+subsystem_implementations:
+  transport: "genetic_routing"         # Use genetic algorithms for routing
+  maintenance: "predictive_maintenance"  # ML-based failure prediction
+  quality: "spc_quality"              # Statistical process control
+  energy: "smart_grid"                # Smart grid integration
+  energy_optimizer: "renewable_optimizer"  # Renewable energy optimization
+  monitoring: "digital_twin"          # Digital twin simulation
+
+# Configure each subsystem's behavior
+subsystem_data:
+  transport:
+    population_size: 200
+    mutation_rate: 0.1
+    crossover_rate: 0.8
+    elite_size: 20
+    max_generations: 100
+
+  maintenance:
+    failure_threshold: 0.7
+    predictive_horizon_hours: 336  # 2 weeks lookahead
+    min_reliability: 0.99
+    redundancy_factor: 2.0
+
+  quality:
+    control_limits_sigma: 6        # Six Sigma quality
+    sample_size: 30
+    target_cpk: 2.0
+    auto_correction: true
+
+  energy:
+    grid_connection: true
+    grid_buy_price: 0.15
+    grid_sell_price: 0.10
+    demand_response: true
+    battery_strategy: "economic"
+
+  monitoring:
+    simulation_timestep: 0.05
+    prediction_horizon: 200
+    optimization_objective: "efficiency"
+
+# Define configuration profiles
+profiles:
+  learning_mode:
+    description: "Aggressive learning for rapid optimization"
+    subsystem_data:
+      transport:
+        mutation_rate: 0.25
+        max_generations: 200
+
+  production_mode:
+    description: "Stable production with proven parameters"
+    subsystem_data:
+      transport:
+        mutation_rate: 0.05
+        elite_size: 50
+
+constraints:
+  enable_weather: true
+  enable_thermal_management: true
+  parallel_processing_limit: 20
+```
+
+To run this fully configured factory:
+
+```bash
+# No Python code needed - everything defined in the spec!
+python3 self_replicating_factory_sim.py --spec my_smart_factory.yaml --modular --profile learning_mode
+```
+
+This achieves "full universality" - the spec defines both the factory's physical configuration (resources, recipes, modules) and its behavioral implementation (which algorithms and strategies to use).
+
 ## Troubleshooting
 
 ### Common Issues
@@ -363,6 +522,37 @@ spec = registry.load("minimal")
 description = registry.get_description("minimal")
 ```
 
+### Factory Builder (NEW)
+
+Create fully configured modular factories from specs:
+
+```python
+from factory_builder import create_factory_from_spec
+from modular_framework import UpdateStrategy
+
+# Create factory with spec-defined subsystems
+factory = create_factory_from_spec(
+    "specs/genetic_optimized.json",
+    profile="aggressive",
+    update_strategy=UpdateStrategy.PARALLEL
+)
+
+# Run simulation - no Python code needed for configuration!
+result = factory.run_simulation(max_hours=1000)
+```
+
+List available subsystems:
+
+```python
+from factory_builder import list_available_subsystems, validate_spec_subsystems
+
+# See what subsystems can be used in specs
+subsystems = list_available_subsystems()
+
+# Validate a spec's subsystem implementations
+is_valid = validate_spec_subsystems("specs/genetic_optimized.json")
+```
+
 ## Contributing
 
 To contribute new spec templates:
@@ -381,3 +571,6 @@ Planned improvements:
 - Spec merging tools
 - Performance profiling per spec
 - Cloud-based spec sharing
+- Visual subsystem designer
+- Hot-reload for spec changes during simulation
+- Distributed factory simulation across multiple specs

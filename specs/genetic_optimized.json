@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "name": "Genetic Algorithm Optimized Factory",
+    "version": "1.0.0",
+    "description": "Factory using genetic algorithms and ML for optimization",
+    "parent": "minimal.json"
+  },
+  "subsystem_implementations": {
+    "transport": "genetic_routing",
+    "maintenance": "predictive_maintenance",
+    "quality": "spc_quality",
+    "energy": "renewable_optimizer"
+  },
+  "subsystem_data": {
+    "transport": {
+      "population_size": 100,
+      "mutation_rate": 0.15,
+      "crossover_rate": 0.7,
+      "elite_size": 10,
+      "max_generations": 50
+    },
+    "maintenance": {
+      "failure_threshold": 0.8,
+      "maintenance_window_hours": 4,
+      "predictive_horizon_hours": 168,
+      "min_reliability": 0.95
+    },
+    "quality": {
+      "control_limits_sigma": 3,
+      "sample_size": 10,
+      "sample_frequency_hours": 1,
+      "target_cpk": 1.33
+    },
+    "energy": {
+      "solar_weight": 0.6,
+      "wind_weight": 0.3,
+      "grid_weight": 0.1,
+      "battery_reserve": 0.2,
+      "optimization_horizon_hours": 24
+    }
+  },
+  "profiles": {
+    "aggressive": {
+      "description": "Aggressive optimization with higher mutation rates",
+      "subsystem_data": {
+        "transport": {
+          "mutation_rate": 0.25,
+          "max_generations": 100
+        }
+      }
+    },
+    "conservative": {
+      "description": "Conservative optimization for stability",
+      "subsystem_data": {
+        "transport": {
+          "mutation_rate": 0.05,
+          "elite_size": 20
+        }
+      }
+    }
+  },
+  "constraints": {
+    "processing_speed_multiplier": 1.5,
+    "parallel_processing_limit": 10,
+    "enable_capacity_limits": true,
+    "enable_degradation": true,
+    "enable_quality_control": true,
+    "enable_maintenance": true
+  }
+}

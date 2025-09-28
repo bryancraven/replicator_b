@@ -2640,6 +2640,8 @@ def main():
                        help='Maximum simulation hours')
     parser.add_argument('--output', type=str, default='factory_simulation_log.json',
                        help='Output file for simulation results')
+    parser.add_argument('--modular', action='store_true',
+                       help='Use ModularFactory with custom subsystems from spec')
     args = parser.parse_args()
 
     # Load configuration
@@ -2695,9 +2697,31 @@ def main():
             print(f"Error loading spec: {e}")
             print("Falling back to default configuration")
 
-    # Run simulation with spec data if available
-    factory = Factory(config, spec_dict=spec_dict, resource_enum=resource_enum_for_factory)
-    results = factory.run_simulation(max_hours=args.max_hours)
+    # Run simulation - use ModularFactory if --modular flag is set
+    if args.modular:
+        # Use ModularFactory with spec-defined subsystems
+        from factory_builder import create_factory_from_spec
+        from modular_framework import UpdateStrategy
+
+        if args.spec:
+            # Create from spec with subsystem implementations
+            factory = create_factory_from_spec(
+                args.spec,
+                profile=args.profile,
+                update_strategy=UpdateStrategy.SEQUENTIAL
+            )
+            print(f"Using ModularFactory with spec-defined subsystems")
+        else:
+            # Use ModularFactory with defaults
+            from modular_factory_adapter import ModularFactory
+            factory = ModularFactory(config)
+            print(f"Using ModularFactory with default subsystems")
+
+        results = factory.run_simulation(max_hours=args.max_hours)
+    else:
+        # Use traditional Factory
+        factory = Factory(config, spec_dict=spec_dict, resource_enum=resource_enum_for_factory)
+        results = factory.run_simulation(max_hours=args.max_hours)
 
     # Save results
     if results:

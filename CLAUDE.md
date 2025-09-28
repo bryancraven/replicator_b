@@ -101,6 +101,9 @@ python3 self_replicating_factory_sim.py --spec specs/default.spec --profile high
 
 # Custom parameters with spec
 python3 self_replicating_factory_sim.py --spec specs/minimal.spec --max-hours 5000 --output custom_results.json
+
+# NEW: Run with modular architecture using custom subsystems from spec
+python3 self_replicating_factory_sim.py --spec specs/default.spec --modular --profile experimental
 ```
 
 **Programmatic Usage:**
@@ -114,6 +117,25 @@ ResourceType, recipes, module_specs, config = load_factory_spec("specs/minimal.s
 factory = Factory(config)
 factory.recipes = recipes
 factory.module_specs = module_specs
+
+# NEW: Create modular factory from spec with custom subsystems
+from factory_builder import create_factory_from_spec
+
+# Creates ModularFactory with subsystem_implementations from spec
+factory = create_factory_from_spec("specs/default.spec", "experimental")
+result = factory.run_simulation(max_hours=1000)
+```
+
+**Factory Builder Module (NEW):**
+```bash
+# List available subsystem implementations
+python3 factory_builder.py list
+
+# Validate subsystems in a spec file
+python3 factory_builder.py validate specs/default.spec
+
+# Create modular factory from spec
+python3 factory_builder.py create specs/default.spec experimental
 ```
 
 ### Spec Loader Module Capabilities
@@ -165,6 +187,8 @@ The complete specification format is documented in `SPEC_FORMAT.md`, including:
 - **Recipe files**: External recipe definitions for modularity
 - **Dynamic validation**: Real-time dependency and cycle checking
 - **Profile switching**: Runtime configuration variants
+- **Subsystem Implementations (NEW)**: Define both WHAT (resources/recipes) and HOW (custom subsystems)
+- **Complete No-Code Factories**: Create fully functional modular factories without Python code
 
 **Example Spec Structure:**
 ```yaml
@@ -195,6 +219,21 @@ constraints:
   parallel_processing_limit: 10
   enable_degradation: true
 
+# NEW: Define custom subsystem implementations
+subsystem_implementations:
+  transport: "genetic_routing"
+  energy: "smart_grid"
+  quality: "spc_quality"
+
+# Configure subsystems with specific parameters
+subsystem_data:
+  transport:
+    population_size: 100
+    mutation_rate: 0.15
+  energy:
+    grid_connection: true
+    battery_strategy: "economic"
+
 profiles:
   fast_mode:
     processing_speed_multiplier: 2.0
@@ -205,11 +244,14 @@ profiles:
 The spec system provides significant advantages:
 
 1. **No Code Changes**: Define arbitrary factory configurations without modifying simulation code
-2. **Experimentation**: Easy A/B testing of different factory designs
-3. **Validation**: Automatic validation prevents invalid configurations
-4. **Modularity**: Reusable components through inheritance and external files
-5. **Performance**: Minimal vs. realistic configurations for different use cases
-6. **Documentation**: Self-documenting factory configurations with metadata
+2. **Complete Factory Definition**: Specs now define both WHAT (resources/recipes) and HOW (subsystems)
+3. **Modular Architecture Integration**: Seamless integration with modular framework via factory_builder
+4. **Experimentation**: Easy A/B testing of different factory designs and subsystem combinations
+5. **Validation**: Automatic validation prevents invalid configurations and missing subsystems
+6. **Modularity**: Reusable components through inheritance and external files
+7. **Performance**: Minimal vs. realistic configurations for different use cases
+8. **Documentation**: Self-documenting factory configurations with metadata
+9. **Advanced Subsystems**: Access genetic algorithms, smart grids, and AI-driven systems via specs
 
 ## Modular Architecture (NEW)
 

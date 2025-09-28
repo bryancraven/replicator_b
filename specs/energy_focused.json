@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "name": "Energy Optimized Factory",
+    "version": "1.0.0",
+    "description": "Factory with smart grid integration and renewable optimization",
+    "parent": "minimal.json"
+  },
+  "subsystem_implementations": {
+    "energy": "smart_grid",
+    "energy_optimizer": "renewable_optimizer",
+    "transport": "adaptive_transport",
+    "monitoring": "digital_twin"
+  },
+  "subsystem_data": {
+    "energy": {
+      "grid_connection": true,
+      "max_grid_power_kw": 1000,
+      "grid_sell_price": 0.08,
+      "grid_buy_price": 0.12,
+      "demand_response": true,
+      "battery_strategy": "economic",
+      "peak_shaving_threshold": 0.8
+    },
+    "energy_optimizer": {
+      "solar_weight": 0.7,
+      "wind_weight": 0.2,
+      "grid_weight": 0.1,
+      "battery_reserve": 0.3,
+      "optimization_horizon_hours": 48,
+      "weather_forecast": true,
+      "price_forecast": true
+    },
+    "transport": {
+      "learning_rate": 0.1,
+      "adaptation_period": 100,
+      "energy_weight": 0.8,
+      "time_weight": 0.2
+    },
+    "monitoring": {
+      "optimization_objective": "energy_cost",
+      "include_carbon_footprint": true,
+      "grid_carbon_intensity": 0.4
+    }
+  },
+  "constraints": {
+    "initial_solar_capacity_kw": 500,
+    "solar_panel_efficiency": 0.30,
+    "battery_efficiency": 0.98,
+    "battery_capacity_kwh": 2000,
+    "enable_weather": true,
+    "enable_thermal_management": true,
+    "processing_speed_multiplier": 0.8,
+    "ambient_temperature": 22
+  },
+  "profiles": {
+    "summer": {
+      "description": "Summer operation with high solar availability",
+      "constraints": {
+        "solar_panel_efficiency": 0.32,
+        "ambient_temperature": 30,
+        "average_cloud_cover": 0.1
+      }
+    },
+    "winter": {
+      "description": "Winter operation with reduced solar",
+      "constraints": {
+        "solar_panel_efficiency": 0.25,
+        "ambient_temperature": 5,
+        "average_cloud_cover": 0.6
+      },
+      "subsystem_data": {
+        "energy_optimizer": {
+          "grid_weight": 0.3,
+          "solar_weight": 0.4
+        }
+      }
+    },
+    "grid_outage": {
+      "description": "Island mode during grid outage",
+      "subsystem_data": {
+        "energy": {
+          "grid_connection": false,
+          "battery_strategy": "survival"
+        }
+      }
+    }
+  }
+}

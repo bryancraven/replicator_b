@@ -57,10 +57,17 @@ python3 self_replicating_factory_sim.py --spec minimal.json --profile fast_simul
 
 # Use the full ultra-realistic spec (requires PyYAML)
 python3 self_replicating_factory_sim.py --spec default.spec --output results.json
+
+# NEW: Run with modular architecture using custom subsystems from spec
+python3 self_replicating_factory_sim.py --spec specs/genetic_optimized.json --modular
+
+# Use factory_builder module for complete spec-to-factory conversion
+python3 factory_builder.py create specs/default.spec high_throughput
 ```
 
 ### Modular Architecture (NEW)
 ```python
+# Option 1: Programmatic factory creation
 from modular_factory_adapter import ModularFactory
 from custom_subsystems import GeneticRoutingTransport
 
@@ -74,6 +81,13 @@ factory.add_custom_subsystem("genetic_transport", GeneticRoutingTransport())
 factory.set_update_strategy(UpdateStrategy.PARALLEL)
 
 # Run simulation
+result = factory.run_simulation(max_hours=1000)
+
+# Option 2: Create from spec file with custom subsystems
+from factory_builder import create_factory_from_spec
+
+# Spec defines both configuration AND custom subsystem implementations
+factory = create_factory_from_spec("specs/my_advanced_factory.json")
 result = factory.run_simulation(max_hours=1000)
 ```
 
@@ -99,6 +113,7 @@ result = factory.run_simulation(max_hours=1000)
 
 ### Spec System
 - `spec_loader.py` - Dynamic spec loading and validation system
+- `factory_builder.py` - Creates complete factories from spec files (NEW)
 - `specs/` - Factory specification files
   - `default.spec` - Ultra-realistic factory with 250+ components
   - `default_recipes.yaml` - Complete recipe chains
@@ -106,15 +121,53 @@ result = factory.run_simulation(max_hours=1000)
 
 ## 📋 Spec System (NEW)
 
-The spec system allows you to define complete factory configurations externally without modifying code.
+The spec system allows you to define complete factory configurations externally without modifying code. The new **subsystem_implementations** feature extends this to define both WHAT (resources, recipes) and HOW (subsystem implementations) in a single spec file.
+
+## 🏭 Factory Builder (NEW)
+
+The `factory_builder.py` module enables complete factory creation from spec files, bridging the spec system with the modular architecture.
+
+### Factory Builder Features
+- **Complete Spec-to-Factory Translation**: Creates fully configured ModularFactory instances from specs
+- **Subsystem Validation**: Validates that all specified subsystems are available
+- **Dynamic Configuration**: Applies profiles and configurations at runtime
+- **No-Code Factory Creation**: Define advanced factories without writing Python code
+
+### Usage Examples
+```bash
+# List all available subsystem implementations
+python3 factory_builder.py list
+
+# Validate a spec file's subsystem implementations
+python3 factory_builder.py validate specs/my_factory.json
+
+# Create a factory from a spec
+python3 factory_builder.py create specs/genetic_optimized.json high_throughput
+```
+
+### Programmatic Usage
+```python
+from factory_builder import create_factory_from_spec, list_available_subsystems
+
+# See all available subsystems
+subsystems = list_available_subsystems()
+print("Available:", list(subsystems.keys()))
+
+# Create factory with genetic algorithms and smart grid
+factory = create_factory_from_spec("specs/advanced_factory.json", "optimization_mode")
+result = factory.run_simulation(max_hours=2000)
+```
 
 ### Key Features
+- **Complete Configuration**: Define both WHAT (resources, recipes) and HOW (subsystem implementations) in specs
 - **Modular Design**: Define complete factory configurations in external files
 - **Dynamic Loading**: ResourceType enum generated from specs at runtime
+- **Subsystem Implementations**: Specify custom subsystems (genetic routing, smart grids, etc.) in specs
 - **Inheritance**: Specs can extend parent specs for variations
 - **Profiles**: Switch between optimization modes (high_throughput, energy_efficient, etc.)
 - **Validation**: Automatic checking for dependency cycles and missing resources
 - **Format Flexibility**: Support for JSON and YAML formats (YAML requires PyYAML)
+- **No-Code Factory Creation**: Create complete modular factories without writing Python code
 
 ### Available Specs
 - **`specs/default.spec`**: Ultra-realistic factory with 250+ components and 16 modules
@@ -125,6 +178,7 @@ The spec system allows you to define complete factory configurations externally 
 - `--profile`: Configuration profile from spec (e.g., `high_throughput`)
 - `--max-hours`: Maximum simulation hours (default: 10000)
 - `--output`: Output file for results (default: `factory_simulation_log.json`)
+- `--modular`: Use ModularFactory with custom subsystems from spec (NEW)
 
 ### Creating Custom Specs
 See `SPEC_FORMAT.md` for complete documentation. Basic structure:
@@ -153,6 +207,21 @@ modules:
     max_throughput: 5.0
     power_consumption_idle: 10.0
     power_consumption_active: 100.0
+
+# NEW: Define custom subsystem implementations
+subsystem_implementations:
+  transport: "genetic_routing"
+  energy: "smart_grid"
+  quality: "spc_quality"
+
+# Configure subsystems with specific parameters
+subsystem_data:
+  transport:
+    population_size: 100
+    mutation_rate: 0.15
+  energy:
+    grid_connection: true
+    battery_strategy: "economic"
 
 profiles:
   fast_simulation:
