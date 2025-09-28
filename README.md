@@ -14,9 +14,11 @@ The detailed model reveals that autonomous replication requires approximately 2-
 
 - **250+ Components**: From raw ores to microprocessors
 - **16 Specialized Modules**: Mining, chemical, CNC, cleanroom, transport, etc.
+- **Spec System**: Define complete factories in external configuration files
 - **Modular Architecture**: Swappable subsystems, parallel execution, event-driven
 - **Comprehensive Systems**: Thermal management, contamination control, AGV routing
 - **Configurable Profiles**: High-throughput, energy-efficient, high-quality modes
+- **Dynamic Configuration**: Load different factory designs without code changes
 
 ## 🚀 Quick Start
 
@@ -29,6 +31,21 @@ The detailed model reveals that autonomous replication requires approximately 2-
 python3 self_replicating_factory_sim.py
 python3 analyze_factory_sim.py
 python3 visualize_factory_system.py
+```
+
+### Spec-Based Configuration (NEW)
+```bash
+# Default simulation (ultra-realistic with 250+ components)
+python3 self_replicating_factory_sim.py
+
+# Minimal spec for faster testing (~40 components)
+python3 self_replicating_factory_sim.py --spec minimal.json --max-hours 100
+
+# Use spec with profile (high_throughput, energy_efficient, etc.)
+python3 self_replicating_factory_sim.py --spec minimal.json --profile fast_simulation
+
+# Custom output file
+python3 self_replicating_factory_sim.py --spec specs/default.spec --output results.json
 ```
 
 ### Modular Architecture (NEW)
@@ -66,6 +83,71 @@ result = factory.run_simulation(max_hours=1000)
 ### Documentation
 - `CLAUDE.md` - Development guide for Claude Code
 - `README.md` - This file
+- `SPEC_FORMAT.md` - Complete spec system format documentation
+- `DYNAMIC_SUBSYSTEMS_PLAN.md` - Plan for making subsystems fully dynamic
+
+### Spec System
+- `spec_loader.py` - Dynamic spec loading and validation system
+- `specs/` - Factory specification files
+  - `default.spec` - Ultra-realistic factory with 250+ components
+  - `default_recipes.yaml` - Complete recipe chains
+  - `minimal.json` - Simplified ~40 component factory
+
+## 📋 Spec System (NEW)
+
+The spec system allows you to define complete factory configurations externally without modifying code.
+
+### Key Features
+- **Modular Design**: Define complete factory configurations in external files
+- **Dynamic Loading**: ResourceType enum generated from specs at runtime
+- **Inheritance**: Specs can extend parent specs for variations
+- **Profiles**: Switch between optimization modes (high_throughput, energy_efficient, etc.)
+- **Validation**: Automatic checking for dependency cycles and missing resources
+- **Format Flexibility**: Support for JSON and YAML formats (YAML requires PyYAML)
+
+### Available Specs
+- **`specs/default.spec`**: Ultra-realistic factory with 250+ components and 16 modules
+- **`specs/minimal.json`**: Simplified factory with ~40 components for faster simulation
+
+### Command-Line Arguments
+- `--spec`: Path to spec file (e.g., `specs/minimal.json`)
+- `--profile`: Configuration profile from spec (e.g., `high_throughput`)
+- `--max-hours`: Maximum simulation hours (default: 10000)
+- `--output`: Output file for results (default: `factory_simulation_log.json`)
+
+### Creating Custom Specs
+See `SPEC_FORMAT.md` for complete documentation. Basic structure:
+```yaml
+metadata:
+  name: "My Custom Factory"
+  version: "1.0.0"
+
+resources:
+  STEEL:
+    density: 7.8
+    storage_temp: 25
+    contamination_sensitivity: 0.1
+
+recipes:
+  - output: STEEL
+    output_quantity: 500
+    inputs:
+      IRON_ORE: 600
+    energy_kwh: 150
+    time_hours: 1.5
+    required_module: refining
+
+modules:
+  refining:
+    max_throughput: 5.0
+    power_consumption_idle: 10.0
+    power_consumption_active: 100.0
+
+profiles:
+  fast_simulation:
+    processing_speed_multiplier: 2.0
+    enable_degradation: false
+```
 
 ## 🏗️ Modular Architecture
 
@@ -449,12 +531,14 @@ This simulation provides a testbed for:
 
 ## 🔮 Future Enhancements
 
+- **Dynamic Subsystems**: Fully dynamic subsystems without hardcoded resources (see `DYNAMIC_SUBSYSTEMS_PLAN.md`)
 - **Spatial Layout**: 2D/3D factory floor optimization
 - **Economic Modeling**: Cost optimization and market dynamics
 - **Learning Curves**: Efficiency improvements over time
 - **Fault Tolerance**: Redundancy and backup systems
 - **Network Effects**: Module-to-module direct connections
 - **Multi-Factory**: Distributed production networks
+- **Spec Optimization**: Automated spec generation and optimization tools
 
 ## 📝 License
 
