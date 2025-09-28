@@ -1,0 +1,1420 @@
+recipes:
+  # Raw material extraction (per ton)
+  - output: SILICON_ORE
+    output_quantity: 1000
+    inputs: {}
+    energy_kwh: 50
+    time_hours: 1.0
+    required_module: mining
+
+  - output: IRON_ORE
+    output_quantity: 1000
+    inputs: {}
+    energy_kwh: 40
+    time_hours: 0.8
+    required_module: mining
+
+  - output: COPPER_ORE
+    output_quantity: 1000
+    inputs: {}
+    energy_kwh: 60
+    time_hours: 1.2
+    required_module: mining
+
+  - output: ALUMINUM_ORE
+    output_quantity: 1000
+    inputs: {}
+    energy_kwh: 70
+    time_hours: 1.5
+    required_module: mining
+
+  - output: LITHIUM_ORE
+    output_quantity: 100
+    inputs: {}
+    energy_kwh: 100
+    time_hours: 3.0
+    required_module: mining
+
+  - output: RARE_EARTH_ORE
+    output_quantity: 10
+    inputs: {}
+    energy_kwh: 200
+    time_hours: 5.0
+    required_module: mining
+
+  - output: CARBON_ORE
+    output_quantity: 500
+    inputs: {}
+    energy_kwh: 30
+    time_hours: 0.5
+    required_module: mining
+
+  # Chemical products
+  - output: SULFURIC_ACID
+    output_quantity: 100
+    inputs:
+      CARBON_ORE: 50
+    energy_kwh: 80
+    time_hours: 2.0
+    required_module: chemical
+
+  - output: POLYMER_RESIN
+    output_quantity: 50
+    inputs:
+      CARBON_ORE: 100
+      CATALYST: 1
+    energy_kwh: 120
+    time_hours: 3.0
+    required_module: chemical
+
+  - output: ELECTROLYTE_SOLUTION
+    output_quantity: 100
+    inputs:
+      LITHIUM_COMPOUND: 20
+      ORGANIC_SOLVENT: 50
+    energy_kwh: 60
+    time_hours: 1.5
+    required_module: chemical
+
+  - output: EPOXY
+    output_quantity: 20
+    inputs:
+      POLYMER_RESIN: 10
+      CATALYST: 0.5
+    energy_kwh: 40
+    time_hours: 1.0
+    required_module: chemical
+
+  - output: LUBRICANT
+    output_quantity: 100
+    inputs:
+      CARBON_ORE: 50
+    energy_kwh: 30
+    time_hours: 0.8
+    required_module: chemical
+
+  - output: COOLANT
+    output_quantity: 200
+    inputs:
+      ORGANIC_SOLVENT: 100
+    energy_kwh: 20
+    time_hours: 0.5
+    required_module: chemical
+
+  - output: CATALYST
+    output_quantity: 10
+    inputs:
+      RARE_EARTH_ORE: 5
+    energy_kwh: 100
+    time_hours: 2.0
+    required_module: chemical
+
+  - output: ORGANIC_SOLVENT
+    output_quantity: 100
+    inputs:
+      CARBON_ORE: 80
+    energy_kwh: 60
+    time_hours: 1.5
+    required_module: chemical
+
+  - output: HYDROCHLORIC_ACID
+    output_quantity: 100
+    inputs:
+      CARBON_ORE: 40
+    energy_kwh: 70
+    time_hours: 1.8
+    required_module: chemical
+
+  - output: SODIUM_HYDROXIDE
+    output_quantity: 100
+    inputs:
+      CARBON_ORE: 60
+    energy_kwh: 90
+    time_hours: 2.2
+    required_module: chemical
+
+  - output: SILICONE
+    output_quantity: 50
+    inputs:
+      SILICON_ORE: 30
+      POLYMER_RESIN: 20
+    energy_kwh: 80
+    time_hours: 2.0
+    required_module: chemical
+
+  - output: FLUX
+    output_quantity: 100
+    inputs:
+      POLYMER_RESIN: 30
+    energy_kwh: 40
+    time_hours: 1.0
+    required_module: chemical
+
+  # Refined materials
+  - output: PURE_SILICON
+    output_quantity: 100
+    inputs:
+      SILICON_ORE: 500
+    energy_kwh: 200
+    time_hours: 2.0
+    required_module: refining
+
+  - output: STEEL
+    output_quantity: 500
+    inputs:
+      IRON_ORE: 600
+      CARBON_ORE: 10
+    energy_kwh: 150
+    time_hours: 1.5
+    required_module: refining
+
+  - output: COPPER_WIRE
+    output_quantity: 200
+    inputs:
+      COPPER_ORE: 250
+    energy_kwh: 80
+    time_hours: 1.0
+    required_module: refining
+
+  - output: ALUMINUM_SHEET
+    output_quantity: 300
+    inputs:
+      ALUMINUM_ORE: 400
+    energy_kwh: 100
+    time_hours: 1.2
+    required_module: refining
+
+  - output: LITHIUM_COMPOUND
+    output_quantity: 50
+    inputs:
+      LITHIUM_ORE: 80
+    energy_kwh: 120
+    time_hours: 2.0
+    required_module: refining
+
+  - output: RARE_EARTH_MAGNETS
+    output_quantity: 5
+    inputs:
+      RARE_EARTH_ORE: 8
+    energy_kwh: 150
+    time_hours: 3.0
+    required_module: refining
+
+  - output: GLASS
+    output_quantity: 100
+    inputs:
+      SILICON_ORE: 150
+    energy_kwh: 80
+    time_hours: 0.8
+    required_module: refining
+
+  - output: PLASTIC
+    output_quantity: 100
+    inputs:
+      POLYMER_RESIN: 80
+    energy_kwh: 60
+    time_hours: 0.5
+    required_module: refining
+
+  - output: CARBON_FIBER
+    output_quantity: 10
+    inputs:
+      CARBON_ORE: 50
+      POLYMER_RESIN: 5
+    energy_kwh: 200
+    time_hours: 4.0
+    required_module: refining
+
+  - output: CERAMIC
+    output_quantity: 50
+    inputs:
+      SILICON_ORE: 40
+      ALUMINUM_ORE: 20
+    energy_kwh: 150
+    time_hours: 3.0
+    required_module: refining
+
+  - output: LEAD
+    output_quantity: 100
+    inputs:
+      IRON_ORE: 120
+    energy_kwh: 80
+    time_hours: 1.5
+    required_module: refining
+
+  - output: TIN
+    output_quantity: 100
+    inputs:
+      IRON_ORE: 110
+    energy_kwh: 70
+    time_hours: 1.3
+    required_module: refining
+
+  # Precision mechanical components
+  - output: BEARING
+    output_quantity: 100
+    inputs:
+      STEEL: 20
+      LUBRICANT: 1
+    energy_kwh: 30
+    time_hours: 0.5
+    required_module: mechanical
+
+  - output: PRECISION_BEARING
+    output_quantity: 10
+    inputs:
+      STEEL: 5
+      LUBRICANT: 0.1
+    energy_kwh: 40
+    time_hours: 1.0
+    required_module: cnc
+    tolerance_um: 5
+
+  - output: BALL_SCREW
+    output_quantity: 5
+    inputs:
+      STEEL: 10
+      LUBRICANT: 0.2
+    energy_kwh: 60
+    time_hours: 2.0
+    required_module: cnc
+    tolerance_um: 10
+
+  - output: LINEAR_GUIDE
+    output_quantity: 5
+    inputs:
+      STEEL: 15
+      LUBRICANT: 0.3
+    energy_kwh: 80
+    time_hours: 2.5
+    required_module: cnc
+    tolerance_um: 10
+
+  - output: GEAR
+    output_quantity: 50
+    inputs:
+      STEEL: 30
+    energy_kwh: 40
+    time_hours: 0.8
+    required_module: mechanical
+
+  - output: SPRING
+    output_quantity: 200
+    inputs:
+      STEEL: 10
+    energy_kwh: 20
+    time_hours: 0.3
+    required_module: mechanical
+
+  - output: DAMPER
+    output_quantity: 20
+    inputs:
+      STEEL: 10
+      PLASTIC: 5
+      LUBRICANT: 0.5
+    energy_kwh: 30
+    time_hours: 0.6
+    required_module: mechanical
+
+  - output: COUPLING
+    output_quantity: 50
+    inputs:
+      STEEL: 20
+      PLASTIC: 5
+    energy_kwh: 25
+    time_hours: 0.5
+    required_module: mechanical
+
+  # Fasteners
+  - output: BOLT
+    output_quantity: 1000
+    inputs:
+      STEEL: 20
+    energy_kwh: 15
+    time_hours: 0.2
+    required_module: mechanical
+
+  - output: SCREW
+    output_quantity: 2000
+    inputs:
+      STEEL: 15
+    energy_kwh: 12
+    time_hours: 0.2
+    required_module: mechanical
+
+  - output: WASHER
+    output_quantity: 5000
+    inputs:
+      STEEL: 10
+    energy_kwh: 8
+    time_hours: 0.1
+    required_module: mechanical
+
+  - output: ORING
+    output_quantity: 500
+    inputs:
+      PLASTIC: 5
+      SILICONE: 2
+    energy_kwh: 10
+    time_hours: 0.2
+    required_module: mechanical
+
+  - output: GASKET
+    output_quantity: 100
+    inputs:
+      PLASTIC: 8
+      SILICONE: 3
+    energy_kwh: 15
+    time_hours: 0.3
+    required_module: mechanical
+
+  # Electronic components
+  - output: SILICON_WAFER
+    output_quantity: 100
+    inputs:
+      PURE_SILICON: 10
+    energy_kwh: 50
+    time_hours: 0.5
+    required_module: cleanroom
+    cleanroom_class: 100
+
+  - output: TRANSISTOR
+    output_quantity: 10000
+    inputs:
+      SILICON_WAFER: 1
+    energy_kwh: 20
+    time_hours: 0.2
+    required_module: cleanroom
+    cleanroom_class: 10
+
+  - output: CAPACITOR
+    output_quantity: 1000
+    inputs:
+      ALUMINUM_SHEET: 2
+      PLASTIC: 3
+      ELECTROLYTE_SOLUTION: 1
+    energy_kwh: 30
+    time_hours: 0.4
+    required_module: electronics
+
+  - output: RESISTOR
+    output_quantity: 2000
+    inputs:
+      CARBON_FIBER: 0.5
+      CERAMIC: 2
+    energy_kwh: 20
+    time_hours: 0.3
+    required_module: electronics
+
+  - output: INDUCTOR
+    output_quantity: 500
+    inputs:
+      COPPER_WIRE: 5
+      STEEL: 2
+    energy_kwh: 25
+    time_hours: 0.4
+    required_module: electronics
+
+  - output: DIODE
+    output_quantity: 2000
+    inputs:
+      SILICON_WAFER: 0.5
+    energy_kwh: 25
+    time_hours: 0.3
+    required_module: cleanroom
+    cleanroom_class: 100
+
+  - output: LED
+    output_quantity: 1000
+    inputs:
+      SILICON_WAFER: 0.3
+      RARE_EARTH_MAGNETS: 0.1
+    energy_kwh: 30
+    time_hours: 0.4
+    required_module: cleanroom
+    cleanroom_class: 100
+
+  - output: INTEGRATED_CIRCUIT
+    output_quantity: 100
+    inputs:
+      SILICON_WAFER: 1
+      TRANSISTOR: 1000
+      CAPACITOR: 100
+      RESISTOR: 200
+    energy_kwh: 100
+    time_hours: 1.0
+    required_module: cleanroom
+    cleanroom_class: 10
+
+  - output: MICROPROCESSOR
+    output_quantity: 10
+    inputs:
+      INTEGRATED_CIRCUIT: 10
+      TRANSISTOR: 10000
+      CAPACITOR: 500
+    energy_kwh: 200
+    time_hours: 2.0
+    required_module: cleanroom
+    cleanroom_class: 1
+
+  - output: MEMORY_CHIP
+    output_quantity: 50
+    inputs:
+      INTEGRATED_CIRCUIT: 5
+      TRANSISTOR: 5000
+    energy_kwh: 150
+    time_hours: 1.5
+    required_module: cleanroom
+    cleanroom_class: 10
+
+  - output: POWER_REGULATOR
+    output_quantity: 100
+    inputs:
+      TRANSISTOR: 50
+      CAPACITOR: 20
+      INDUCTOR: 10
+      HEAT_SINK: 5
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: electronics
+
+  - output: VOLTAGE_REGULATOR
+    output_quantity: 200
+    inputs:
+      TRANSISTOR: 20
+      CAPACITOR: 10
+      RESISTOR: 30
+    energy_kwh: 30
+    time_hours: 0.4
+    required_module: electronics
+
+  - output: CRYSTAL_OSCILLATOR
+    output_quantity: 500
+    inputs:
+      CERAMIC: 2
+      COPPER_WIRE: 1
+    energy_kwh: 20
+    time_hours: 0.3
+    required_module: electronics
+
+  # PCB and connections
+  - output: PCB_SUBSTRATE
+    output_quantity: 100
+    inputs:
+      GLASS: 20
+      COPPER_WIRE: 10
+      EPOXY: 5
+    energy_kwh: 60
+    time_hours: 0.8
+    required_module: electronics
+
+  - output: SOLDER_PASTE
+    output_quantity: 100
+    inputs:
+      TIN: 60
+      LEAD: 30
+      FLUX: 10
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: chemical
+
+  - output: CONNECTOR
+    output_quantity: 500
+    inputs:
+      PLASTIC: 10
+      COPPER_WIRE: 5
+    energy_kwh: 30
+    time_hours: 0.4
+    required_module: mechanical
+
+  - output: WIRE_HARNESS
+    output_quantity: 50
+    inputs:
+      COPPER_WIRE: 20
+      CONNECTOR: 10
+      PLASTIC: 5
+    energy_kwh: 40
+    time_hours: 0.6
+    required_module: assembly
+
+  # Sensors
+  - output: THERMOCOUPLE
+    output_quantity: 100
+    inputs:
+      COPPER_WIRE: 2
+      STEEL: 1
+      CERAMIC: 1
+    energy_kwh: 30
+    time_hours: 0.4
+    required_module: electronics
+
+  - output: PRESSURE_TRANSDUCER
+    output_quantity: 50
+    inputs:
+      SILICON_WAFER: 0.2
+      STEEL: 3
+      INTEGRATED_CIRCUIT: 1
+    energy_kwh: 50
+    time_hours: 0.6
+    required_module: electronics
+
+  - output: FLOW_METER
+    output_quantity: 20
+    inputs:
+      STEEL: 5
+      INTEGRATED_CIRCUIT: 1
+      PLASTIC: 2
+    energy_kwh: 60
+    time_hours: 0.8
+    required_module: assembly
+
+  - output: PROXIMITY_SENSOR
+    output_quantity: 100
+    inputs:
+      INTEGRATED_CIRCUIT: 1
+      LED: 2
+      PLASTIC: 1
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: electronics
+
+  - output: ENCODER
+    output_quantity: 50
+    inputs:
+      INTEGRATED_CIRCUIT: 2
+      GLASS: 1
+      LED: 5
+    energy_kwh: 60
+    time_hours: 0.7
+    required_module: electronics
+
+  - output: LOAD_CELL
+    output_quantity: 20
+    inputs:
+      STEEL: 5
+      STRAIN_GAUGE: 4
+      INTEGRATED_CIRCUIT: 1
+    energy_kwh: 70
+    time_hours: 1.0
+    required_module: assembly
+
+  - output: STRAIN_GAUGE
+    output_quantity: 200
+    inputs:
+      SILICON_WAFER: 0.1
+      COPPER_WIRE: 0.5
+    energy_kwh: 30
+    time_hours: 0.3
+    required_module: electronics
+
+  - output: CAMERA_MODULE
+    output_quantity: 10
+    inputs:
+      INTEGRATED_CIRCUIT: 5
+      GLASS: 2
+      PLASTIC: 5
+    energy_kwh: 150
+    time_hours: 1.5
+    required_module: electronics
+
+  - output: LIDAR
+    output_quantity: 5
+    inputs:
+      LASER_DIODE: 1
+      INTEGRATED_CIRCUIT: 10
+      GLASS: 5
+      SERVO_MOTOR: 1
+    energy_kwh: 300
+    time_hours: 3.0
+    required_module: assembly
+
+  # Actuators and motors
+  - output: MOTOR_COIL
+    output_quantity: 100
+    inputs:
+      COPPER_WIRE: 20
+      STEEL: 5
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: mechanical
+
+  - output: ELECTRIC_MOTOR
+    output_quantity: 10
+    inputs:
+      MOTOR_COIL: 4
+      RARE_EARTH_MAGNETS: 2
+      STEEL: 10
+      BEARING: 4
+    energy_kwh: 100
+    time_hours: 1.2
+    required_module: assembly
+
+  - output: SERVO_MOTOR
+    output_quantity: 10
+    inputs:
+      ELECTRIC_MOTOR: 1
+      ENCODER: 1
+      CONTROL_BOARD: 1
+    energy_kwh: 120
+    time_hours: 1.5
+    required_module: assembly
+
+  - output: STEPPER_MOTOR
+    output_quantity: 20
+    inputs:
+      MOTOR_COIL: 2
+      RARE_EARTH_MAGNETS: 1
+      STEEL: 5
+    energy_kwh: 80
+    time_hours: 1.0
+    required_module: assembly
+
+  - output: LINEAR_ACTUATOR
+    output_quantity: 10
+    inputs:
+      ELECTRIC_MOTOR: 1
+      BALL_SCREW: 1
+      LINEAR_GUIDE: 1
+      STEEL: 10
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: assembly
+
+  - output: PNEUMATIC_CYLINDER
+    output_quantity: 20
+    inputs:
+      STEEL: 10
+      ORING: 4
+      ALUMINUM_SHEET: 5
+    energy_kwh: 60
+    time_hours: 0.8
+    required_module: mechanical
+
+  - output: SOLENOID_VALVE
+    output_quantity: 50
+    inputs:
+      STEEL: 3
+      MOTOR_COIL: 1
+      ORING: 2
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: assembly
+
+  # Power components
+  - output: BATTERY_CELL
+    output_quantity: 100
+    inputs:
+      LITHIUM_COMPOUND: 10
+      ALUMINUM_SHEET: 5
+      ELECTROLYTE_SOLUTION: 20
+      PLASTIC: 10
+    energy_kwh: 200
+    time_hours: 2.0
+    required_module: assembly
+
+  - output: SOLAR_CELL
+    output_quantity: 100
+    inputs:
+      SILICON_WAFER: 10
+      GLASS: 10
+      ALUMINUM_SHEET: 2
+      COPPER_WIRE: 5
+    energy_kwh: 120
+    time_hours: 1.2
+    required_module: cleanroom
+    cleanroom_class: 1000
+
+  - output: TRANSFORMER
+    output_quantity: 10
+    inputs:
+      STEEL: 20
+      COPPER_WIRE: 50
+      CERAMIC: 5
+    energy_kwh: 100
+    time_hours: 1.5
+    required_module: assembly
+
+  - output: INVERTER
+    output_quantity: 10
+    inputs:
+      POWER_REGULATOR: 5
+      MICROPROCESSOR: 1
+      HEAT_SINK: 10
+      CAPACITOR: 50
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: assembly
+
+  # Thermal management
+  - output: HEAT_SINK
+    output_quantity: 100
+    inputs:
+      ALUMINUM_SHEET: 10
+    energy_kwh: 30
+    time_hours: 0.3
+    required_module: mechanical
+
+  - output: HEAT_EXCHANGER
+    output_quantity: 10
+    inputs:
+      ALUMINUM_SHEET: 20
+      COPPER_WIRE: 10
+      STEEL: 10
+    energy_kwh: 100
+    time_hours: 1.5
+    required_module: assembly
+
+  - output: COOLING_FAN
+    output_quantity: 50
+    inputs:
+      ELECTRIC_MOTOR: 1
+      PLASTIC: 5
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: assembly
+
+  - output: RADIATOR
+    output_quantity: 10
+    inputs:
+      ALUMINUM_SHEET: 15
+      COPPER_WIRE: 5
+      STEEL: 5
+    energy_kwh: 80
+    time_hours: 1.0
+    required_module: assembly
+
+  - output: CHILLER_UNIT
+    output_quantity: 2
+    inputs:
+      COMPRESSOR: 1
+      HEAT_EXCHANGER: 2
+      REFRIGERANT_CIRCUIT: 1
+      CONTROL_BOARD: 1
+    energy_kwh: 300
+    time_hours: 4.0
+    required_module: assembly
+
+  - output: COMPRESSOR
+    output_quantity: 5
+    inputs:
+      ELECTRIC_MOTOR: 2
+      STEEL: 30
+      BEARING: 10
+    energy_kwh: 200
+    time_hours: 2.5
+    required_module: assembly
+
+  - output: REFRIGERANT_CIRCUIT
+    output_quantity: 5
+    inputs:
+      COPPER_WIRE: 20
+      STEEL: 10
+      VALVE: 5
+    energy_kwh: 100
+    time_hours: 1.5
+    required_module: assembly
+
+  - output: VALVE
+    output_quantity: 50
+    inputs:
+      STEEL: 5
+      ORING: 2
+    energy_kwh: 30
+    time_hours: 0.4
+    required_module: mechanical
+
+  # Precision manufacturing equipment
+  - output: CNC_SPINDLE
+    output_quantity: 2
+    inputs:
+      PRECISION_BEARING: 6
+      ELECTRIC_MOTOR: 2
+      STEEL: 20
+    energy_kwh: 250
+    time_hours: 3.0
+    required_module: assembly
+
+  - output: LASER_DIODE
+    output_quantity: 10
+    inputs:
+      RARE_EARTH_MAGNETS: 1
+      SILICON_WAFER: 0.5
+      HEAT_SINK: 2
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: cleanroom
+    cleanroom_class: 100
+
+  - output: FOCUSING_LENS
+    output_quantity: 20
+    inputs:
+      GLASS: 5
+    energy_kwh: 100
+    time_hours: 1.5
+    required_module: laser
+    tolerance_um: 1
+
+  - output: VACUUM_PUMP
+    output_quantity: 5
+    inputs:
+      ELECTRIC_MOTOR: 2
+      STEEL: 20
+      GASKET: 5
+    energy_kwh: 200
+    time_hours: 2.5
+    required_module: assembly
+
+  - output: MASS_FLOW_CONTROLLER
+    output_quantity: 10
+    inputs:
+      FLOW_METER: 1
+      SOLENOID_VALVE: 2
+      CONTROL_BOARD: 1
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: assembly
+
+  # Testing equipment
+  - output: OSCILLOSCOPE
+    output_quantity: 2
+    inputs:
+      DISPLAY_PANEL: 1
+      MICROPROCESSOR: 2
+      MEMORY_CHIP: 10
+      CONTROL_BOARD: 2
+    energy_kwh: 200
+    time_hours: 3.0
+    required_module: assembly
+
+  - output: MULTIMETER
+    output_quantity: 10
+    inputs:
+      DISPLAY_PANEL: 1
+      INTEGRATED_CIRCUIT: 5
+      PLASTIC: 5
+    energy_kwh: 80
+    time_hours: 1.0
+    required_module: assembly
+
+  - output: TENSILE_TESTER
+    output_quantity: 1
+    inputs:
+      LINEAR_ACTUATOR: 2
+      LOAD_CELL: 2
+      CONTROL_BOARD: 1
+      STEEL: 50
+    energy_kwh: 300
+    time_hours: 4.0
+    required_module: assembly
+
+  - output: CMM_PROBE
+    output_quantity: 1
+    inputs:
+      PRECISION_BEARING: 6
+      LINEAR_ACTUATOR: 3
+      ENCODER: 3
+      CONTROL_BOARD: 1
+    energy_kwh: 200
+    time_hours: 4.0
+    required_module: assembly
+    tolerance_um: 0.1
+
+  - output: PARTICLE_COUNTER
+    output_quantity: 5
+    inputs:
+      LASER_DIODE: 1
+      INTEGRATED_CIRCUIT: 5
+      FLOW_METER: 1
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: assembly
+
+  - output: DISPLAY_PANEL
+    output_quantity: 10
+    inputs:
+      GLASS: 10
+      INTEGRATED_CIRCUIT: 10
+      LED: 1000
+    energy_kwh: 200
+    time_hours: 2.5
+    required_module: assembly
+
+  # Cleanroom equipment
+  - output: HEPA_FILTER
+    output_quantity: 20
+    inputs:
+      GLASS: 5
+      PLASTIC: 10
+    energy_kwh: 50
+    time_hours: 0.8
+    required_module: assembly
+
+  - output: LAMINAR_FLOW_HOOD
+    output_quantity: 5
+    inputs:
+      STEEL: 30
+      HEPA_FILTER: 4
+      COOLING_FAN: 2
+      GLASS: 10
+    energy_kwh: 150
+    time_hours: 2.5
+    required_module: assembly
+
+  # Chemical processing equipment
+  - output: REACTION_VESSEL
+    output_quantity: 1
+    inputs:
+      STEEL: 500
+      GLASS: 50
+      GASKET: 10
+      PRESSURE_TRANSDUCER: 2
+    energy_kwh: 400
+    time_hours: 8.0
+    required_module: assembly
+
+  - output: DISTILLATION_COLUMN
+    output_quantity: 1
+    inputs:
+      STEEL: 800
+      HEAT_EXCHANGER: 5
+      THERMOCOUPLE: 10
+      CONTROL_BOARD: 1
+    energy_kwh: 600
+    time_hours: 12.0
+    required_module: assembly
+
+  - output: SEPARATION_MEMBRANE
+    output_quantity: 100
+    inputs:
+      POLYMER_RESIN: 20
+      CERAMIC: 10
+    energy_kwh: 100
+    time_hours: 2.0
+    required_module: chemical
+
+  - output: CHEMICAL_PUMP
+    output_quantity: 10
+    inputs:
+      ELECTRIC_MOTOR: 1
+      STEEL: 10
+      GASKET: 5
+      CERAMIC: 3
+    energy_kwh: 120
+    time_hours: 1.5
+    required_module: assembly
+
+  # Transport equipment
+  - output: AGV_CHASSIS
+    output_quantity: 1
+    inputs:
+      STEEL: 200
+      PLASTIC: 50
+      BEARING: 20
+    energy_kwh: 300
+    time_hours: 5.0
+    required_module: assembly
+
+  - output: AGV_NAVIGATION
+    output_quantity: 1
+    inputs:
+      LIDAR: 2
+      CAMERA_MODULE: 4
+      CONTROL_BOARD: 1
+      AI_MODEL: 1
+    energy_kwh: 100
+    time_hours: 3.0
+    required_module: assembly
+
+  - output: CONVEYOR_BELT
+    output_quantity: 10
+    inputs:
+      PLASTIC: 100
+      STEEL: 20
+    energy_kwh: 50
+    time_hours: 1.0
+    required_module: assembly
+
+  - output: CONVEYOR_MOTOR
+    output_quantity: 1
+    inputs:
+      ELECTRIC_MOTOR: 1
+      GEAR: 5
+      BEARING: 4
+    energy_kwh: 40
+    time_hours: 0.5
+    required_module: assembly
+
+  # Recycling equipment
+  - output: SHREDDER
+    output_quantity: 1
+    inputs:
+      STEEL: 300
+      ELECTRIC_MOTOR: 5
+      GEAR: 20
+    energy_kwh: 500
+    time_hours: 6.0
+    required_module: assembly
+
+  - output: MAGNETIC_SEPARATOR
+    output_quantity: 1
+    inputs:
+      RARE_EARTH_MAGNETS: 50
+      STEEL: 100
+      CONVEYOR_BELT: 5
+    energy_kwh: 300
+    time_hours: 4.0
+    required_module: assembly
+
+  - output: OPTICAL_SORTER
+    output_quantity: 1
+    inputs:
+      CAMERA_MODULE: 10
+      CONVEYOR_BELT: 3
+      AI_MODEL: 1
+      CONTROL_BOARD: 5
+    energy_kwh: 400
+    time_hours: 5.0
+    required_module: assembly
+
+  # Software products
+  - output: PLC_PROGRAM
+    output_quantity: 1
+    inputs: {}
+    energy_kwh: 0.5
+    time_hours: 40.0
+    required_module: software
+
+  - output: ROBOT_FIRMWARE
+    output_quantity: 1
+    inputs: {}
+    energy_kwh: 1.0
+    time_hours: 80.0
+    required_module: software
+    software_required: PLC_PROGRAM
+
+  - output: AI_MODEL
+    output_quantity: 1
+    inputs: {}
+    energy_kwh: 5.0
+    time_hours: 200.0
+    required_module: software
+    software_required: ROBOT_FIRMWARE
+
+  - output: SCADA_SYSTEM
+    output_quantity: 1
+    inputs: {}
+    energy_kwh: 2.0
+    time_hours: 120.0
+    required_module: software
+    software_required: PLC_PROGRAM
+
+  # Advanced assemblies
+  - output: CONTROL_BOARD
+    output_quantity: 10
+    inputs:
+      PCB_SUBSTRATE: 1
+      MICROPROCESSOR: 1
+      MEMORY_CHIP: 4
+      CAPACITOR: 50
+      RESISTOR: 100
+      VOLTAGE_REGULATOR: 2
+      CONNECTOR: 10
+      SOLDER_PASTE: 1
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: assembly
+
+  - output: ROBOTIC_ARM
+    output_quantity: 1
+    inputs:
+      SERVO_MOTOR: 6
+      STEEL: 50
+      ALUMINUM_SHEET: 20
+      CONTROL_BOARD: 2
+      WIRE_HARNESS: 3
+      PROXIMITY_SENSOR: 10
+      ROBOT_FIRMWARE: 1
+    energy_kwh: 400
+    time_hours: 6.0
+    required_module: assembly
+
+  - output: CONVEYOR_SYSTEM
+    output_quantity: 1
+    inputs:
+      CONVEYOR_BELT: 10
+      CONVEYOR_MOTOR: 5
+      STEEL: 200
+      CONTROL_BOARD: 1
+      PROXIMITY_SENSOR: 20
+      PLC_PROGRAM: 1
+    energy_kwh: 350
+    time_hours: 5.0
+    required_module: assembly
+
+  - output: PRINTER_HEAD_3D
+    output_quantity: 1
+    inputs:
+      STEPPER_MOTOR: 3
+      LINEAR_GUIDE: 3
+      HEAT_EXCHANGER: 1
+      THERMOCOUPLE: 2
+      CONTROL_BOARD: 1
+    energy_kwh: 200
+    time_hours: 3.0
+    required_module: assembly
+
+  - output: FURNACE_ELEMENT
+    output_quantity: 10
+    inputs:
+      CERAMIC: 20
+      STEEL: 10
+      THERMOCOUPLE: 5
+    energy_kwh: 150
+    time_hours: 2.0
+    required_module: assembly
+
+  - output: SOLAR_PANEL
+    output_quantity: 10
+    inputs:
+      SOLAR_CELL: 60
+      GLASS: 50
+      ALUMINUM_SHEET: 20
+      PLASTIC: 30
+      CONNECTOR: 10
+    energy_kwh: 200
+    time_hours: 2.0
+    required_module: assembly
+
+  - output: BATTERY_PACK
+    output_quantity: 10
+    inputs:
+      BATTERY_CELL: 100
+      PLASTIC: 50
+      CONTROL_BOARD: 2
+      COOLING_FAN: 2
+      WIRE_HARNESS: 5
+    energy_kwh: 300
+    time_hours: 3.0
+    required_module: assembly
+
+  # Factory modules - The big pieces
+  - output: MINING_MODULE
+    output_quantity: 1
+    inputs:
+      ROBOTIC_ARM: 4
+      CONVEYOR_SYSTEM: 2
+      CONTROL_BOARD: 10
+      STEEL: 2000
+      ELECTRIC_MOTOR: 20
+      PLC_PROGRAM: 1
+    energy_kwh: 2000
+    time_hours: 20.0
+    required_module: assembly
+
+  - output: REFINING_MODULE
+    output_quantity: 1
+    inputs:
+      FURNACE_ELEMENT: 10
+      REACTION_VESSEL: 2
+      HEAT_EXCHANGER: 10
+      CONTROL_BOARD: 10
+      STEEL: 2500
+      CHEMICAL_PUMP: 5
+      SCADA_SYSTEM: 1
+    energy_kwh: 2500
+    time_hours: 25.0
+    required_module: assembly
+
+  - output: CHEMICAL_MODULE
+    output_quantity: 1
+    inputs:
+      REACTION_VESSEL: 3
+      DISTILLATION_COLUMN: 2
+      CHEMICAL_PUMP: 10
+      CONTROL_BOARD: 15
+      STEEL: 2500
+      SCADA_SYSTEM: 1
+    energy_kwh: 3000
+    time_hours: 30.0
+    required_module: assembly
+
+  - output: ELECTRONICS_MODULE
+    output_quantity: 1
+    inputs:
+      ROBOTIC_ARM: 10
+      PCB_SUBSTRATE: 100
+      CONTROL_BOARD: 20
+      OSCILLOSCOPE: 2
+      MULTIMETER: 5
+      STEEL: 1000
+      ROBOT_FIRMWARE: 1
+    energy_kwh: 2500
+    time_hours: 25.0
+    required_module: assembly
+
+  - output: MECHANICAL_MODULE
+    output_quantity: 1
+    inputs:
+      CNC_SPINDLE: 5
+      ROBOTIC_ARM: 5
+      CONVEYOR_SYSTEM: 2
+      CONTROL_BOARD: 15
+      STEEL: 2000
+      ROBOT_FIRMWARE: 1
+    energy_kwh: 3000
+    time_hours: 30.0
+    required_module: assembly
+
+  - output: CNC_MODULE
+    output_quantity: 1
+    inputs:
+      CNC_SPINDLE: 3
+      LINEAR_GUIDE: 9
+      BALL_SCREW: 9
+      SERVO_MOTOR: 12
+      CONTROL_BOARD: 5
+      STEEL: 1500
+      ROBOT_FIRMWARE: 1
+    energy_kwh: 2500
+    time_hours: 25.0
+    required_module: assembly
+
+  - output: LASER_MODULE
+    output_quantity: 1
+    inputs:
+      LASER_DIODE: 10
+      FOCUSING_LENS: 20
+      LINEAR_GUIDE: 6
+      SERVO_MOTOR: 8
+      CONTROL_BOARD: 8
+      STEEL: 1000
+      CHILLER_UNIT: 1
+      ROBOT_FIRMWARE: 1
+    energy_kwh: 3000
+    time_hours: 30.0
+    required_module: assembly
+
+  - output: CLEANROOM_MODULE
+    output_quantity: 1
+    inputs:
+      HEPA_FILTER: 20
+      LAMINAR_FLOW_HOOD: 5
+      PARTICLE_COUNTER: 10
+      CONTROL_BOARD: 10
+      STEEL: 3000
+      GLASS: 500
+      SCADA_SYSTEM: 1
+    energy_kwh: 4000
+    time_hours: 40.0
+    required_module: assembly
+
+  - output: ASSEMBLY_MODULE
+    output_quantity: 1
+    inputs:
+      ROBOTIC_ARM: 10
+      CONVEYOR_SYSTEM: 3
+      CONTROL_BOARD: 20
+      PROXIMITY_SENSOR: 50
+      STEEL: 2000
+      ROBOT_FIRMWARE: 1
+    energy_kwh: 3000
+    time_hours: 30.0
+    required_module: assembly
+
+  - output: SOFTWARE_MODULE
+    output_quantity: 1
+    inputs:
+      MICROPROCESSOR: 100
+      MEMORY_CHIP: 500
+      CONTROL_BOARD: 50
+      COOLING_FAN: 20
+      STEEL: 500
+      AI_MODEL: 1
+    energy_kwh: 2000
+    time_hours: 20.0
+    required_module: assembly
+
+  - output: TRANSPORT_MODULE
+    output_quantity: 1
+    inputs:
+      AGV_CHASSIS: 10
+      AGV_NAVIGATION: 10
+      CONVEYOR_MOTOR: 20
+      CONVEYOR_BELT: 50
+      CONTROL_BOARD: 20
+      AI_MODEL: 1
+    energy_kwh: 3500
+    time_hours: 35.0
+    required_module: assembly
+
+  - output: RECYCLING_MODULE
+    output_quantity: 1
+    inputs:
+      SHREDDER: 2
+      MAGNETIC_SEPARATOR: 3
+      OPTICAL_SORTER: 2
+      CONVEYOR_SYSTEM: 3
+      CONTROL_BOARD: 10
+      STEEL: 2000
+      PLC_PROGRAM: 1
+    energy_kwh: 2800
+    time_hours: 28.0
+    required_module: assembly
+
+  - output: TESTING_MODULE
+    output_quantity: 1
+    inputs:
+      CMM_PROBE: 2
+      OSCILLOSCOPE: 5
+      TENSILE_TESTER: 2
+      CONTROL_BOARD: 20
+      STEEL: 1500
+      SCADA_SYSTEM: 1
+    energy_kwh: 3000
+    time_hours: 30.0
+    required_module: assembly
+
+  - output: THERMAL_MODULE
+    output_quantity: 1
+    inputs:
+      CHILLER_UNIT: 2
+      HEAT_EXCHANGER: 10
+      RADIATOR: 5
+      COOLING_FAN: 20
+      THERMOCOUPLE: 50
+      CONTROL_BOARD: 10
+      STEEL: 1500
+      COOLANT: 500
+      PLC_PROGRAM: 1
+    energy_kwh: 2500
+    time_hours: 25.0
+    required_module: assembly
+
+  - output: POWER_MODULE
+    output_quantity: 1
+    inputs:
+      SOLAR_PANEL: 100
+      BATTERY_PACK: 50
+      INVERTER: 20
+      TRANSFORMER: 10
+      CONTROL_BOARD: 20
+      COPPER_WIRE: 2000
+      SCADA_SYSTEM: 1
+    energy_kwh: 4000
+    time_hours: 40.0
+    required_module: assembly
+
+  - output: CONTROL_MODULE
+    output_quantity: 1
+    inputs:
+      MICROPROCESSOR: 50
+      MEMORY_CHIP: 200
+      CONTROL_BOARD: 50
+      PROXIMITY_SENSOR: 100
+      ENCODER: 50
+      COPPER_WIRE: 2000
+      AI_MODEL: 1
+      SCADA_SYSTEM: 1
+    energy_kwh: 3000
+    time_hours: 30.0
+    required_module: assembly

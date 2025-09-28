@@ -9,6 +9,9 @@ import heapq
 import json
 import math
 import random
+import sys
+import argparse
+import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Optional, Tuple
 from enum import Enum
@@ -2587,7 +2590,78 @@ class EnergySystem:
 # MAIN EXECUTION
 # ===============================================================================
 
+# Default configuration - can be overridden by spec loading
+RESOURCE_TYPE = ResourceType  # Default enum
+MODULE_SPECS_DEFAULT = MODULE_SPECS  # Default module specs
+RECIPES_DEFAULT = RECIPES  # Default recipes
+
+def main():
+    """Main entry point with spec loading support"""
+    parser = argparse.ArgumentParser(
+        description='Ultra-Realistic Self-Replicating Factory Simulation'
+    )
+    parser.add_argument('--spec', type=str, default=None,
+                       help='Path to spec file (e.g., specs/minimal.spec)')
+    parser.add_argument('--profile', type=str, default=None,
+                       help='Configuration profile to use from spec')
+    parser.add_argument('--max-hours', type=int, default=10000,
+                       help='Maximum simulation hours')
+    parser.add_argument('--output', type=str, default='factory_simulation_log.json',
+                       help='Output file for simulation results')
+    args = parser.parse_args()
+
+    # Load configuration
+    config = CONFIG.copy()
+    recipes = RECIPES_DEFAULT
+    module_specs = MODULE_SPECS_DEFAULT
+
+    if args.spec:
+        try:
+            # Try to load spec file
+            from spec_loader import SpecLoader
+
+            loader = SpecLoader()
+            spec = loader.load_spec(args.spec)
+
+            # Create dynamic ResourceType enum from spec
+            global ResourceType
+            ResourceType = loader.create_resource_enum(spec)
+
+            # Create recipes and module specs from spec
+            recipes = loader.create_recipes(spec, ResourceType)
+            module_specs = loader.create_module_specs(spec)
+
+            # Create config from spec
+            config = loader.create_config(spec, args.profile)
+
+            # Update global references
+            global RECIPES, MODULE_SPECS
+            RECIPES = recipes
+            MODULE_SPECS = module_specs
+
+            print(f"Loaded spec: {spec.metadata.get('name', 'Unknown')}")
+            print(f"Resources: {len(spec.resources)}")
+            print(f"Recipes: {len(recipes)}")
+            print(f"Modules: {len(module_specs)}")
+            if args.profile:
+                print(f"Profile: {args.profile}")
+        except ImportError:
+            print("Warning: spec_loader module not found, using default configuration")
+        except Exception as e:
+            print(f"Error loading spec: {e}")
+            print("Falling back to default configuration")
+
+    # Run simulation
+    factory = Factory(config)
+    results = factory.run_simulation(max_hours=args.max_hours)
+
+    # Save results
+    if results:
+        with open(args.output, 'w') as f:
+            json.dump(results, f)
+        print(f"Simulation results saved to {args.output}")
+
+    return results
+
 if __name__ == "__main__":
-    # Run ultra-realistic simulation
-    factory = Factory(CONFIG)
-    results = factory.run_simulation(max_hours=10000)
+    main()

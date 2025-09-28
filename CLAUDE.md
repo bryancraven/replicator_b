@@ -52,6 +52,165 @@ cat factory_simulation_log.json | python3 -m json.tool | head -100
   pip3 install matplotlib  # Only if visualization needed
   ```
 
+## Spec System (NEW)
+
+The Factory Specification (spec) system allows you to define complete factory configurations in external files, enabling easy experimentation with different factory designs without modifying code. This system provides a declarative way to configure resources, recipes, modules, and constraints using YAML, JSON, or custom `.spec` format files.
+
+### Spec System Architecture
+
+The spec system is built around several key components:
+
+- **`spec_loader.py`**: Core module providing spec loading, validation, and integration capabilities
+- **`SPEC_FORMAT.md`**: Complete documentation of spec file format and syntax
+- **`specs/` directory**: Contains predefined spec files for different factory configurations
+- **Command-line integration**: Native support for spec files via `--spec` argument
+
+### Available Spec Files
+
+The simulation comes with these predefined specifications:
+
+- **`specs/default.spec`**: Ultra-realistic factory with 250+ components and 16 specialized modules
+  - Complete component hierarchy from raw materials to finished products
+  - Realistic chemical processing, electronics manufacturing, and assembly chains
+  - Full constraint modeling (energy, thermal, contamination, quality control)
+
+- **`specs/minimal.spec`**: Simplified factory with ~50 essential components
+  - Streamlined for faster simulation and testing
+  - Core production chains without complex dependencies
+  - Ideal for development and prototyping
+
+- **`specs/minimal.json`**: JSON version of minimal spec
+  - Alternative format for JSON-based tooling
+  - Identical functionality to minimal.spec
+
+### Running with Specs
+
+**Command Line Usage:**
+```bash
+# Use default built-in configuration (no spec)
+python3 self_replicating_factory_sim.py
+
+# Use minimal spec for faster simulation
+python3 self_replicating_factory_sim.py --spec specs/minimal.spec
+
+# Use full realistic spec
+python3 self_replicating_factory_sim.py --spec specs/default.spec
+
+# Use spec with specific profile
+python3 self_replicating_factory_sim.py --spec specs/default.spec --profile high_throughput
+
+# Custom parameters with spec
+python3 self_replicating_factory_sim.py --spec specs/minimal.spec --max-hours 5000 --output custom_results.json
+```
+
+**Programmatic Usage:**
+```python
+from spec_loader import load_factory_spec
+
+# Load complete factory configuration from spec
+ResourceType, recipes, module_specs, config = load_factory_spec("specs/minimal.spec")
+
+# Create factory with spec-defined configuration
+factory = Factory(config)
+factory.recipes = recipes
+factory.module_specs = module_specs
+```
+
+### Spec Loader Module Capabilities
+
+The `spec_loader.py` module provides comprehensive spec management:
+
+**SpecLoader Class:**
+- **`load_spec(path)`**: Load and validate spec files with inheritance support
+- **`create_resource_enum()`**: Generate ResourceType enum from spec resources
+- **`create_recipes()`**: Convert spec recipes to Recipe objects
+- **`create_module_specs()`**: Generate ModuleSpec objects from spec modules
+- **`create_config()`**: Build CONFIG dictionary with profile support
+
+**SpecRegistry Class:**
+- **`list_specs()`**: Discover available spec files
+- **`load(name)`**: Load spec by name from registry
+- **`get_description(name)`**: Get spec metadata without full loading
+
+**SpecValidator Class:**
+- **Dependency validation**: Ensures all recipe inputs/outputs exist
+- **Cycle detection**: Prevents circular dependencies in recipes
+- **Module validation**: Verifies module specifications are valid
+- **Resource validation**: Checks resource definitions for completeness
+
+**Key Features:**
+- **Inheritance**: Specs can inherit from parent specs with `parent` metadata field
+- **External recipe files**: Large recipe sets can be stored in separate files
+- **Profile support**: Multiple configuration variants within single spec
+- **Format flexibility**: Supports YAML (.spec, .yaml), JSON (.json)
+- **Validation**: Comprehensive validation prevents invalid configurations
+- **Dynamic enums**: ResourceType enum generated dynamically from spec
+
+### Spec Format Documentation
+
+The complete specification format is documented in `SPEC_FORMAT.md`, including:
+
+**Core Sections:**
+- **Metadata**: Name, version, description, inheritance
+- **Resources**: Material properties (density, temperature, contamination sensitivity)
+- **Recipes**: Production chains with inputs, outputs, energy, time requirements
+- **Modules**: Production module specifications (throughput, power, reliability)
+- **Initial State**: Starting modules, resources, and energy systems
+- **Constraints**: Global factory parameters and feature toggles
+- **Subsystems**: Individual subsystem configurations
+- **Profiles**: Configuration variations (high_throughput, energy_efficient, etc.)
+
+**Advanced Features:**
+- **Inheritance**: Child specs override parent values
+- **Recipe files**: External recipe definitions for modularity
+- **Dynamic validation**: Real-time dependency and cycle checking
+- **Profile switching**: Runtime configuration variants
+
+**Example Spec Structure:**
+```yaml
+metadata:
+  name: "Custom Factory"
+  version: "1.0.0"
+  description: "Specialized factory configuration"
+
+resources:
+  STEEL:
+    density: 7.8
+    contamination_sensitivity: 0.1
+
+recipes:
+  - output: STEEL_BEAM
+    inputs:
+      STEEL: 10
+    energy_kwh: 50
+    time_hours: 2.0
+    required_module: cnc
+
+modules:
+  cnc:
+    max_throughput: 20.0
+    power_consumption_active: 50.0
+
+constraints:
+  parallel_processing_limit: 10
+  enable_degradation: true
+
+profiles:
+  fast_mode:
+    processing_speed_multiplier: 2.0
+```
+
+### Integration Benefits
+
+The spec system provides significant advantages:
+
+1. **No Code Changes**: Define arbitrary factory configurations without modifying simulation code
+2. **Experimentation**: Easy A/B testing of different factory designs
+3. **Validation**: Automatic validation prevents invalid configurations
+4. **Modularity**: Reusable components through inheritance and external files
+5. **Performance**: Minimal vs. realistic configurations for different use cases
+6. **Documentation**: Self-documenting factory configurations with metadata
+
 ## Modular Architecture (NEW)
 
 The simulation now features a fully modular architecture with these components:
