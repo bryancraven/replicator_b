@@ -7,7 +7,11 @@ pyyaml>=6.0
 # Optional: For visualization and analysis
 matplotlib>=3.5.0
 
-# Optional: For development and testing
-# pytest>=7.0.0
-# black>=22.0.0
-# mypy>=0.950
+# Optional: For configuration validation
+pydantic>=2.0.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+mypy>=0.950

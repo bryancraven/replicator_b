@@ -6,18 +6,25 @@ This module bridges the spec system with the modular architecture, allowing
 complete factory definition (both WHAT and HOW) through configuration files.
 """
 
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, List
 from spec_loader import SpecLoader, FactorySpec
 from modular_factory_adapter import ModularFactory
 from modular_framework import SubsystemRegistry, UpdateStrategy, SubsystemConfig
+from exceptions import (
+    SubsystemNotFoundError,
+    SubsystemConfigError,
+    SpecNotFoundError
+)
 
 # Import custom subsystems to register them
 import custom_subsystems
 
 
-def create_factory_from_spec(spec_path: str,
-                            profile: Optional[str] = None,
-                            update_strategy: UpdateStrategy = UpdateStrategy.SEQUENTIAL) -> ModularFactory:
+def create_factory_from_spec(
+    spec_path: str,
+    profile: Optional[str] = None,
+    update_strategy: UpdateStrategy = UpdateStrategy.SEQUENTIAL
+) -> ModularFactory:
     """
     Create a fully configured ModularFactory from a spec file.
 
@@ -29,16 +36,24 @@ def create_factory_from_spec(spec_path: str,
     5. Sets the update strategy
 
     Args:
-        spec_path: Path to the spec file
-        profile: Optional profile to apply from the spec
+        spec_path: Path to the spec file (.json, .yaml, .spec)
+        profile: Optional profile name to apply from spec.profiles
         update_strategy: How subsystems should be updated (default: SEQUENTIAL)
 
     Returns:
-        Fully configured ModularFactory ready to run
+        Fully configured ModularFactory ready to run simulation
+
+    Raises:
+        SpecNotFoundError: If spec file doesn't exist
+        SpecParseError: If spec file cannot be parsed
+        SpecValidationError: If spec validation fails
+        SubsystemNotFoundError: If subsystem implementation not found
+        SubsystemConfigError: If subsystem configuration is invalid
 
     Example:
-        factory = create_factory_from_spec("specs/genetic_optimized.json")
-        result = factory.run_simulation(max_hours=1000)
+        >>> factory = create_factory_from_spec("specs/genetic_optimized.json")
+        >>> result = factory.run_simulation(max_hours=1000)
+        >>> print(f"Completed in {result['simulation_time']:.1f} hours")
     """
     # Load the spec
     loader = SpecLoader()
@@ -66,6 +81,10 @@ def create_factory_from_spec(spec_path: str,
 
         for role, impl_name in spec.subsystem_implementations.items():
             try:
+                # Check if implementation exists
+                if impl_name not in SubsystemRegistry.list_available():
+                    raise SubsystemNotFoundError(impl_name, SubsystemRegistry.list_available())
+
                 # Create subsystem from registry
                 subsystem = SubsystemRegistry.create(impl_name)
 
@@ -78,8 +97,8 @@ def create_factory_from_spec(spec_path: str,
                 factory.add_custom_subsystem(role, subsystem, subsystem_config)
                 print(f"  ✓ {role}: {impl_name}")
 
-            except ValueError as e:
-                print(f"  ✗ {role}: Failed to create {impl_name} - {e}")
+            except (ValueError, SubsystemNotFoundError) as e:
+                raise SubsystemConfigError(role, str(e)) from e
 
     # Set update strategy
     factory.set_update_strategy(update_strategy)

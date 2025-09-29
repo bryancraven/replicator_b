@@ -9,13 +9,17 @@ easily swapped, parallelized, and reconfigured without modifying core simulation
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Set, Callable, Type
-from collections import defaultdict
+from collections import defaultdict, deque
 from enum import Enum
 import json
 import time
 import threading
 from queue import Queue
 import copy
+import logging
+
+# Configure module logger
+logger = logging.getLogger(__name__)
 
 
 # ===============================================================================
@@ -105,56 +109,97 @@ class Event:
 
 
 class EventBus:
-    """Central event bus for publish/subscribe communication"""
+    """Central event bus for publish/subscribe communication (thread-safe)"""
 
-    def __init__(self):
+    def __init__(self, max_history: int = 1000, max_queue_size: int = 10000):
+        """
+        Initialize event bus with backpressure support.
+
+        Args:
+            max_history: Maximum number of events to keep in history
+            max_queue_size: Maximum size of event queue (0 = unbounded)
+        """
         self.subscribers: Dict[EventType, List[Callable]] = defaultdict(list)
-        self.event_queue: Queue = Queue()
-        self.event_history: List[Event] = []
-        self.max_history = 1000
+        self.event_queue: Queue = Queue(maxsize=max_queue_size) if max_queue_size > 0 else Queue()
+        self.event_history: deque[Event] = deque(maxlen=max_history)
+        self.max_history = max_history
+        self.max_queue_size = max_queue_size
+        self.dropped_events = 0
+        self._subscribers_lock = threading.Lock()  # Thread safety for subscribers
 
     def subscribe(self, event_type: EventType, handler: Callable[[Event], None]):
-        """Subscribe to events of a specific type"""
-        self.subscribers[event_type].append(handler)
+        """Subscribe to events of a specific type (thread-safe)"""
+        with self._subscribers_lock:
+            self.subscribers[event_type].append(handler)
 
     def unsubscribe(self, event_type: EventType, handler: Callable):
-        """Unsubscribe from events"""
-        if handler in self.subscribers[event_type]:
-            self.subscribers[event_type].remove(handler)
+        """Unsubscribe from events (thread-safe)"""
+        with self._subscribers_lock:
+            if handler in self.subscribers[event_type]:
+                self.subscribers[event_type].remove(handler)
 
     def publish(self, event: Event):
-        """Publish an event to all subscribers"""
-        self.event_queue.put(event)
-        self.event_history.append(event)
-        if len(self.event_history) > self.max_history:
-            self.event_history.pop(0)
+        """
+        Publish an event to all subscribers.
+
+        If queue is full, the event is dropped and logged.
+        """
+        try:
+            self.event_queue.put_nowait(event)
+            self.event_history.append(event)  # deque automatically maintains maxlen
+        except Exception:  # Queue.Full inherits from Exception
+            self.dropped_events += 1
+            if self.dropped_events % 100 == 1:  # Log every 100th dropped event
+                logger.warning(
+                    f"Event queue full (size={self.max_queue_size}), "
+                    f"dropped {self.dropped_events} events total. "
+                    f"Latest dropped: {event}"
+                )
 
     def process_events(self):
-        """Process all queued events"""
+        """Process all queued events (thread-safe)"""
         while not self.event_queue.empty():
             event = self.event_queue.get()
-            for handler in self.subscribers[event.type]:
+
+            # Get handler list with lock
+            with self._subscribers_lock:
+                handlers = list(self.subscribers[event.type])  # Copy to avoid modification during iteration
+                custom_handlers = list(self.subscribers.get(EventType.CUSTOM, []))
+
+            # Call handlers without holding lock
+            for handler in handlers:
                 try:
                     handler(event)
                 except Exception as e:
-                    print(f"Error handling event {event}: {e}")
+                    logger.error(f"Error handling event {event}: {e}", exc_info=True)
 
             # Also notify generic subscribers
-            for handler in self.subscribers.get(EventType.CUSTOM, []):
+            for handler in custom_handlers:
                 try:
                     handler(event)
                 except Exception as e:
-                    print(f"Error in custom handler for {event}: {e}")
+                    logger.error(f"Error in custom handler for {event}: {e}", exc_info=True)
 
     def get_history(self, event_type: Optional[EventType] = None,
                     source: Optional[str] = None) -> List[Event]:
         """Get event history with optional filtering"""
-        history = self.event_history
+        history = list(self.event_history)
         if event_type:
             history = [e for e in history if e.type == event_type]
         if source:
             history = [e for e in history if e.source == source]
         return history
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get event bus metrics"""
+        return {
+            "queue_size": self.event_queue.qsize(),
+            "max_queue_size": self.max_queue_size,
+            "history_size": len(self.event_history),
+            "max_history_size": self.max_history,
+            "dropped_events": self.dropped_events,
+            "subscriber_count": sum(len(handlers) for handlers in self.subscribers.values())
+        }
 
 
 # ===============================================================================
@@ -346,7 +391,7 @@ class SubsystemOrchestrator:
                 try:
                     results[name] = subsystem.update(delta_time, context)
                 except Exception as e:
-                    print(f"Error updating {name}: {e}")
+                    logger.error(f"Error updating subsystem '{name}': {e}", exc_info=True)
                     results[name] = {"error": str(e)}
         return results
 
@@ -380,7 +425,7 @@ class SubsystemOrchestrator:
                     try:
                         results[name] = future.result()
                     except Exception as e:
-                        print(f"Error updating {name}: {e}")
+                        logger.error(f"Error updating subsystem '{name}' in parallel: {e}", exc_info=True)
                         results[name] = {"error": str(e)}
 
         return results

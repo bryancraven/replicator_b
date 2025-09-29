@@ -18,39 +18,45 @@ logger = logging.getLogger(__name__)
 
 
 # ===============================================================================
-# BASE DYNAMIC SUBSYSTEM
+# RESOURCE ENUM MIXIN
 # ===============================================================================
 
-class DynamicSubsystemBase:
-    """Base class for dynamic subsystems"""
+class ResourceEnumMixin:
+    """
+    Mixin providing resource enum lookup with caching.
 
-    def __init__(self, config: Dict[str, Any], resource_enum: Optional[Enum] = None):
+    This eliminates code duplication across all dynamic subsystems that need
+    to convert resource names to enum values.
+    """
+
+    def __init__(self, resource_enum: Optional[Enum] = None):
         """
-        Initialize dynamic subsystem
+        Initialize mixin with resource enum.
 
         Args:
-            config: Configuration dictionary from spec
             resource_enum: ResourceType enum (can be dynamically generated)
         """
-        self.config = config or {}
         self.resource_enum = resource_enum
-        self._resource_cache = {}  # Cache for enum lookups
-        self.enabled = self.config.get('enabled', True)
+        self._resource_cache: Dict[str, Any] = {}
 
     def _get_resource_enum(self, resource_name: str) -> Optional[Any]:
         """
-        Get enum value from string name with caching
+        Get enum value from string name with caching.
 
         Args:
-            resource_name: String name of resource
+            resource_name: String name of resource (e.g., 'STEEL')
 
         Returns:
             Enum value or None if not found
+
+        Example:
+            >>> enum_val = self._get_resource_enum('STEEL')
+            >>> # Returns ResourceType.STEEL if it exists
         """
         if not self.resource_enum:
             return None
 
-        # Check cache first
+        # Check cache first for performance
         if resource_name in self._resource_cache:
             return self._resource_cache[resource_name]
 
@@ -65,15 +71,20 @@ class DynamicSubsystemBase:
 
         return None
 
-    def _convert_config_to_enum_dict(self, config_dict: Dict[str, Any]) -> Dict:
+    def _convert_config_to_enum_dict(self, config_dict: Dict[str, Any]) -> Dict[Any, Any]:
         """
-        Convert a config dictionary with string keys to enum keys
+        Convert a config dictionary with string keys to enum keys.
 
         Args:
             config_dict: Dictionary with string resource names as keys
 
         Returns:
             Dictionary with enum values as keys
+
+        Example:
+            >>> config = {'STEEL': 0.95, 'ALUMINUM': 0.90}
+            >>> enum_dict = self._convert_config_to_enum_dict(config)
+            >>> # Returns {ResourceType.STEEL: 0.95, ResourceType.ALUMINUM: 0.90}
         """
         result = {}
         for resource_name, value in config_dict.items():
@@ -81,15 +92,39 @@ class DynamicSubsystemBase:
             if enum_val:
                 result[enum_val] = value
             else:
-                logger.debug(f"Resource {resource_name} not found in enum")
+                logger.debug(f"Resource {resource_name} not found in enum, skipping")
         return result
+
+    def _clear_cache(self):
+        """Clear the resource enum cache (useful for testing)"""
+        self._resource_cache.clear()
+
+
+# ===============================================================================
+# BASE DYNAMIC SUBSYSTEM
+# ===============================================================================
+
+class DynamicSubsystemBase(ResourceEnumMixin):
+    """Base class for dynamic subsystems with resource enum support"""
+
+    def __init__(self, config: Dict[str, Any], resource_enum: Optional[Enum] = None):
+        """
+        Initialize dynamic subsystem
+
+        Args:
+            config: Configuration dictionary from spec
+            resource_enum: ResourceType enum (can be dynamically generated)
+        """
+        super().__init__(resource_enum)
+        self.config = config or {}
+        self.enabled = self.config.get('enabled', True)
 
 
 # ===============================================================================
 # DYNAMIC WASTE STREAM
 # ===============================================================================
 
-class DynamicWasteStream:
+class DynamicWasteStream(ResourceEnumMixin):
     """Dynamic waste stream that works with any ResourceType enum"""
 
     def __init__(self, config: Optional[Dict] = None, resource_enum: Optional[Enum] = None):
@@ -100,10 +135,9 @@ class DynamicWasteStream:
             config: Configuration with recyclable_materials
             resource_enum: ResourceType enum
         """
+        super().__init__(resource_enum)
         self.config = config or {}
-        self.resource_enum = resource_enum
         self.waste_inventory = defaultdict(float)
-        self._resource_cache = {}
 
         # Process recyclable materials from config
         self.recyclable_materials = {}
@@ -112,24 +146,6 @@ class DynamicWasteStream:
         else:
             # Default fallback values
             self._load_default_recyclables()
-
-    def _get_resource_enum(self, resource_name: str) -> Optional[Any]:
-        """Get enum value from string name with caching"""
-        if not self.resource_enum:
-            return None
-
-        if resource_name in self._resource_cache:
-            return self._resource_cache[resource_name]
-
-        try:
-            if hasattr(self.resource_enum, resource_name):
-                enum_val = getattr(self.resource_enum, resource_name)
-                self._resource_cache[resource_name] = enum_val
-                return enum_val
-        except Exception:
-            pass
-
-        return None
 
     def _load_recyclable_materials(self):
         """Load recyclable materials from config"""
@@ -176,7 +192,7 @@ class DynamicWasteStream:
 # DYNAMIC SOFTWARE PRODUCTION SYSTEM
 # ===============================================================================
 
-class DynamicSoftwareProductionSystem:
+class DynamicSoftwareProductionSystem(ResourceEnumMixin):
     """Dynamic software production system that works with any ResourceType enum"""
 
     def __init__(self, config: Optional[Dict] = None, resource_enum: Optional[Enum] = None):
@@ -187,12 +203,11 @@ class DynamicSoftwareProductionSystem:
             config: Configuration with bug_rates
             resource_enum: ResourceType enum
         """
+        super().__init__(resource_enum)
         self.config = config or {}
-        self.resource_enum = resource_enum
         self.software_library = {}
         self.development_hours = defaultdict(float)
         self.version_counter = defaultdict(int)
-        self._resource_cache = {}
 
         # Process bug rates from config
         self.bug_rates = {}
@@ -200,24 +215,6 @@ class DynamicSoftwareProductionSystem:
             self._load_bug_rates()
         else:
             self._load_default_bug_rates()
-
-    def _get_resource_enum(self, resource_name: str) -> Optional[Any]:
-        """Get enum value from string name with caching"""
-        if not self.resource_enum:
-            return None
-
-        if resource_name in self._resource_cache:
-            return self._resource_cache[resource_name]
-
-        try:
-            if hasattr(self.resource_enum, resource_name):
-                enum_val = getattr(self.resource_enum, resource_name)
-                self._resource_cache[resource_name] = enum_val
-                return enum_val
-        except Exception:
-            pass
-
-        return None
 
     def _load_bug_rates(self):
         """Load bug rates from config"""
@@ -272,17 +269,8 @@ class DynamicSoftwareProductionSystem:
 # DYNAMIC STORAGE SYSTEM
 # ===============================================================================
 
-@dataclass
-class DynamicStorageSystem:
+class DynamicStorageSystem(ResourceEnumMixin):
     """Dynamic storage system that works with any ResourceType enum"""
-
-    total_volume_m3: float
-    total_weight_capacity_tons: float
-    current_inventory: Dict[Any, float] = field(default_factory=dict)
-    waste_inventory: Dict[Any, float] = field(default_factory=dict)
-    enabled: bool = True
-    temperature_controlled: bool = True
-    contamination_controlled: bool = True
 
     def __init__(self,
                  total_volume_m3: float,
@@ -300,14 +288,15 @@ class DynamicStorageSystem:
             resource_enum: ResourceType enum
             enabled: Whether storage limits are enabled
         """
+        super().__init__(resource_enum)
         self.total_volume_m3 = total_volume_m3
         self.total_weight_capacity_tons = total_weight_capacity_tons
         self.current_inventory = defaultdict(float)
         self.waste_inventory = defaultdict(float)
         self.enabled = enabled
         self.config = config or {}
-        self.resource_enum = resource_enum
-        self._resource_cache = {}
+        self.temperature_controlled = True
+        self.contamination_controlled = True
 
         # Material properties from config or spec
         self.material_properties = {}
@@ -315,24 +304,6 @@ class DynamicStorageSystem:
             self._load_material_properties()
         else:
             self._load_default_properties()
-
-    def _get_resource_enum(self, resource_name: str) -> Optional[Any]:
-        """Get enum value from string name with caching"""
-        if not self.resource_enum:
-            return None
-
-        if resource_name in self._resource_cache:
-            return self._resource_cache[resource_name]
-
-        try:
-            if hasattr(self.resource_enum, resource_name):
-                enum_val = getattr(self.resource_enum, resource_name)
-                self._resource_cache[resource_name] = enum_val
-                return enum_val
-        except Exception:
-            pass
-
-        return None
 
     def _load_material_properties(self):
         """Load material properties from config"""

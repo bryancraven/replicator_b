@@ -17,10 +17,19 @@ except ImportError:
     YAML_AVAILABLE = False
     print("Warning: PyYAML not available. Only JSON specs will be supported.")
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Set, Tuple
+from typing import Dict, List, Any, Optional, Set, Tuple, Union
 from enum import Enum
 from collections import defaultdict
 import copy
+
+# Import custom exceptions
+from exceptions import (
+    SpecNotFoundError,
+    SpecParseError,
+    SpecValidationError,
+    CircularDependencyError,
+    SpecInheritanceError
+)
 
 
 # ===============================================================================
@@ -104,27 +113,55 @@ class SpecLoader:
         self.current_spec: Optional[FactorySpec] = None
 
     def load_spec(self, spec_path: str) -> FactorySpec:
-        """Load a spec file and resolve any inheritance"""
+        """
+        Load a spec file and resolve any inheritance.
+
+        Args:
+            spec_path: Path to the spec file (absolute or relative to spec_dir)
+
+        Returns:
+            Fully parsed and validated FactorySpec
+
+        Raises:
+            SpecNotFoundError: If spec file doesn't exist
+            SpecParseError: If spec file cannot be parsed
+            SpecValidationError: If spec validation fails
+        """
         # Resolve full path
         if not os.path.isabs(spec_path):
             # If path already contains 'specs/', don't add it again
             if not spec_path.startswith('specs/') and not os.path.exists(spec_path):
                 spec_path = os.path.join(self.spec_dir, spec_path)
 
+        # Check if file exists
+        if not os.path.exists(spec_path):
+            raise SpecNotFoundError(spec_path)
+
         # Check if already loaded
         if spec_path in self.loaded_specs:
             return self.loaded_specs[spec_path]
 
         # Load the spec file
-        with open(spec_path, 'r') as f:
-            if spec_path.endswith('.json'):
-                spec_data = json.load(f)
-            elif spec_path.endswith(('.yaml', '.yml', '.spec')):
-                if not YAML_AVAILABLE:
-                    raise ImportError("PyYAML is required to load YAML/spec files. Install with: pip install pyyaml")
-                spec_data = yaml.safe_load(f)
-            else:
-                raise ValueError(f"Unsupported spec file format: {spec_path}")
+        try:
+            with open(spec_path, 'r') as f:
+                if spec_path.endswith('.json'):
+                    spec_data = json.load(f)
+                elif spec_path.endswith(('.yaml', '.yml', '.spec')):
+                    if not YAML_AVAILABLE:
+                        raise SpecParseError(
+                            spec_path,
+                            "PyYAML is required to load YAML/spec files. Install with: pip install pyyaml"
+                        )
+                    spec_data = yaml.safe_load(f)
+                else:
+                    raise SpecParseError(
+                        spec_path,
+                        f"Unsupported file extension. Use .json, .yaml, .yml, or .spec"
+                    )
+        except (json.JSONDecodeError, yaml.YAMLError) as e:
+            raise SpecParseError(spec_path, str(e)) from e
+        except IOError as e:
+            raise SpecParseError(spec_path, f"IO error: {e}") from e
 
         # Handle recipes_file reference
         if 'recipes_file' in spec_data:
@@ -346,10 +383,19 @@ class SpecLoader:
 class SpecValidator:
     """Validates factory specifications"""
 
-    def validate(self, spec: FactorySpec):
-        """Validate a factory spec for consistency"""
-        errors = []
-        warnings = []
+    def validate(self, spec: FactorySpec) -> None:
+        """
+        Validate a factory spec for consistency.
+
+        Args:
+            spec: FactorySpec to validate
+
+        Raises:
+            SpecValidationError: If validation fails
+            CircularDependencyError: If circular dependencies detected
+        """
+        errors: List[str] = []
+        warnings: List[str] = []
 
         # Check for resource references in recipes
         resource_names = set(spec.resources.keys())
@@ -380,8 +426,9 @@ class SpecValidator:
         # Check for dependency cycles
         cycles = self._check_dependency_cycles(spec)
         if cycles:
-            for cycle in cycles:
-                errors.append(f"Dependency cycle detected: {' -> '.join(cycle)}")
+            # Raise specific exception for first cycle found
+            if len(cycles) > 0:
+                raise CircularDependencyError(cycles[0])
 
         # Check module specifications
         for name, module in spec.modules.items():
@@ -392,10 +439,7 @@ class SpecValidator:
 
         # Raise exception if errors found
         if errors:
-            error_msg = "Spec validation failed:\n" + "\n".join(errors)
-            if warnings:
-                error_msg += "\nWarnings:\n" + "\n".join(warnings)
-            raise ValueError(error_msg)
+            raise SpecValidationError("Spec validation failed", errors)
         elif warnings:
             print("Spec validation warnings:")
             for warning in warnings:
