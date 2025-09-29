@@ -12,6 +12,7 @@ The detailed model reveals that autonomous replication requires approximately 2-
 
 ## ✨ Key Features
 
+### Core Functionality
 - **250+ Components**: From raw ores to microprocessors
 - **16 Specialized Modules**: Mining, chemical, CNC, cleanroom, transport, etc.
 - **Spec System**: Define complete factories in external configuration files
@@ -20,9 +21,35 @@ The detailed model reveals that autonomous replication requires approximately 2-
 - **Configurable Profiles**: High-throughput, energy-efficient, high-quality modes
 - **Dynamic Configuration**: Load different factory designs without code changes
 
+### Production-Ready (NEW - v1.0.0)
+- **🔒 Input Validation**: File size limits, circular inheritance detection, security hardening
+- **📊 Event Bus Metrics**: Backpressure handling, queue monitoring, dropped event tracking
+- **📝 Structured Logging**: Production-grade error handling with context and tracebacks
+- **🧪 CI/CD Pipeline**: Automated testing, linting, type-checking, security scanning
+- **📦 Modern Packaging**: PEP 621 compliant `pyproject.toml`, CLI entry points
+- **🔄 Code Quality**: Eliminated duplication with `ResourceEnumMixin`, comprehensive type hints
+- **✅ Integration Tests**: Full end-to-end workflow testing for critical paths
+
 ## 🚀 Quick Start
 
 ### Installation
+
+#### Modern Installation (Recommended)
+```bash
+# Install with all features (development ready)
+pip install -e ".[all]"
+
+# Or install specific feature sets
+pip install -e ".[viz]"        # Visualization only
+pip install -e ".[dev]"        # Development tools
+pip install -e .               # Core only
+
+# CLI commands available after installation
+factory-sim --help
+factory-builder list
+```
+
+#### Traditional Installation
 ```bash
 # No dependencies required for core simulation
 python3 self_replicating_factory_sim.py
@@ -109,7 +136,18 @@ result = factory.run_simulation(max_hours=1000)
 - `CLAUDE.md` - Development guide for Claude Code
 - `README.md` - This file
 - `SPEC_FORMAT.md` - Complete spec system format documentation
+- `IMPROVEMENTS.md` - Detailed changelog of v1.0.0 improvements (NEW)
+- `CONTRIBUTING.md` - Contribution guidelines
+- `MIGRATION_GUIDE.md` - Guide for migrating to dynamic subsystems
 - `docs/archive/` - Completed implementation plans and historical docs
+
+### CI/CD & Quality (NEW)
+- `.github/workflows/test.yml` - Automated testing pipeline
+- `.github/workflows/docs.yml` - Documentation workflow
+- `.github/dependabot.yml` - Dependency management
+- `pyproject.toml` - Modern Python packaging configuration
+- `pytest.ini` - Test configuration
+- `mypy.ini` - Type checking configuration
 
 ### Spec System
 - `spec_loader.py` - Dynamic spec loading and validation system
@@ -609,9 +647,88 @@ This simulation provides a testbed for:
 - Circular economy modeling
 - Digital twin development
 
+## 🛠️ Development Workflow (NEW)
+
+### Running Tests
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run full test suite with coverage
+pytest --cov=. --cov-report=term-missing
+
+# Run specific test files
+pytest tests/unit/test_spec_loader.py -v
+pytest tests/integration/ -v
+
+# Run with markers
+pytest -m "not slow"          # Skip slow tests
+pytest -m integration         # Integration tests only
+```
+
+### Code Quality
+```bash
+# Format code
+black .
+
+# Lint code
+ruff check .
+
+# Type checking
+mypy .
+
+# Security scanning
+bandit -r . -ll
+```
+
+### Building & Distribution
+```bash
+# Build package
+python -m build
+
+# Check package
+twine check dist/*
+
+# Install locally
+pip install -e .
+```
+
+### CI/CD Pipeline
+The project includes automated GitHub Actions workflows:
+- **Testing**: Multi-Python version (3.10-3.12) test matrix
+- **Linting**: Black formatting and Ruff linting checks
+- **Type Checking**: MyPy static analysis
+- **Security**: Bandit security scanning, Safety vulnerability checks
+- **Build**: Package build verification
+
+View workflows in `.github/workflows/` directory.
+
+## 📋 Recent Improvements (v1.0.0)
+
+See `IMPROVEMENTS.md` for detailed documentation of all improvements.
+
+### Highlights
+- ✅ **Production-Grade Logging**: Replaced all `print()` with structured logging
+- ✅ **Event Bus Backpressure**: Queue limits, metrics, dropped event tracking
+- ✅ **Code Deduplication**: `ResourceEnumMixin` eliminates 60+ duplicate lines
+- ✅ **Input Validation**: File size limits, circular inheritance detection
+- ✅ **Modern Packaging**: PEP 621 `pyproject.toml` with optional dependencies
+- ✅ **CI/CD Pipeline**: Automated testing, linting, security scanning
+- ✅ **Integration Tests**: 200+ lines of end-to-end workflow tests
+- ✅ **Type Hints**: Comprehensive type annotations across core modules
+
+### Backward Compatibility
+All improvements maintain **100% backward compatibility**. Existing code continues to work without modifications.
+
 ## 🔮 Future Enhancements
 
 - **Dynamic Subsystems**: ✅ Completed - subsystems now configurable via spec files
+- **Async/Await Support**: Async subsystem updates for better parallelization
+- **Database Backend**: SQLite persistence for large simulations
+- **Checkpointing**: Save/resume simulation state
+- **API Documentation**: Sphinx-generated API docs
+- **Performance Profiling**: Identify and optimize bottlenecks
+- **Plugin System**: Entry point-based subsystem discovery
 - **Spatial Layout**: 2D/3D factory floor optimization
 - **Economic Modeling**: Cost optimization and market dynamics
 - **Learning Curves**: Efficiency improvements over time

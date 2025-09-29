@@ -8,6 +8,7 @@ specifications from external files, enabling dynamic factory configurations.
 
 import json
 import os
+import logging
 
 # Try to import yaml, but make it optional
 try:
@@ -15,7 +16,7 @@ try:
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
-    print("Warning: PyYAML not available. Only JSON specs will be supported.")
+    logging.warning("PyYAML not available. Only JSON specs will be supported.")
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Optional, Set, Tuple, Union
 from enum import Enum
@@ -30,6 +31,16 @@ from exceptions import (
     CircularDependencyError,
     SpecInheritanceError
 )
+
+# Configure module logger
+logger = logging.getLogger(__name__)
+
+# Configuration constants
+MAX_SPEC_SIZE_MB = 50  # Maximum spec file size in MB
+MAX_RECIPE_COUNT = 10000  # Maximum recipes per spec
+MAX_RESOURCE_COUNT = 5000  # Maximum resources per spec
+MAX_MODULE_COUNT = 1000  # Maximum modules per spec
+MAX_INHERITANCE_DEPTH = 10  # Maximum spec inheritance depth
 
 
 # ===============================================================================
@@ -107,10 +118,23 @@ class FactorySpec:
 class SpecLoader:
     """Loads and manages factory specifications"""
 
-    def __init__(self, spec_dir: str = "specs"):
+    def __init__(self, spec_dir: str = "specs",
+                 max_spec_size_mb: float = MAX_SPEC_SIZE_MB,
+                 max_inheritance_depth: int = MAX_INHERITANCE_DEPTH):
+        """
+        Initialize spec loader with validation limits.
+
+        Args:
+            spec_dir: Directory containing spec files
+            max_spec_size_mb: Maximum spec file size in MB
+            max_inheritance_depth: Maximum depth for spec inheritance
+        """
         self.spec_dir = spec_dir
         self.loaded_specs: Dict[str, FactorySpec] = {}
         self.current_spec: Optional[FactorySpec] = None
+        self.max_spec_size_bytes = int(max_spec_size_mb * 1024 * 1024)
+        self.max_inheritance_depth = max_inheritance_depth
+        self._inheritance_stack: List[str] = []  # Track inheritance for cycle detection
 
     def load_spec(self, spec_path: str) -> FactorySpec:
         """
@@ -133,13 +157,45 @@ class SpecLoader:
             if not spec_path.startswith('specs/') and not os.path.exists(spec_path):
                 spec_path = os.path.join(self.spec_dir, spec_path)
 
+        # Normalize path for comparison
+        spec_path = os.path.abspath(spec_path)
+
         # Check if file exists
         if not os.path.exists(spec_path):
             raise SpecNotFoundError(spec_path)
 
+        # Validate file size
+        file_size = os.path.getsize(spec_path)
+        if file_size > self.max_spec_size_bytes:
+            raise SpecParseError(
+                spec_path,
+                f"Spec file too large: {file_size / 1024 / 1024:.1f}MB "
+                f"(max {self.max_spec_size_bytes / 1024 / 1024:.1f}MB)"
+            )
+
+        # Check for circular inheritance
+        if spec_path in self._inheritance_stack:
+            cycle = self._inheritance_stack[self._inheritance_stack.index(spec_path):] + [spec_path]
+            raise SpecInheritanceError(
+                spec_path,
+                self._inheritance_stack[-1] if self._inheritance_stack else "root",
+                f"Circular inheritance detected: {' -> '.join(cycle)}"
+            )
+
+        # Check inheritance depth
+        if len(self._inheritance_stack) >= self.max_inheritance_depth:
+            raise SpecInheritanceError(
+                spec_path,
+                self._inheritance_stack[-1],
+                f"Inheritance depth exceeds maximum ({self.max_inheritance_depth})"
+            )
+
         # Check if already loaded
         if spec_path in self.loaded_specs:
             return self.loaded_specs[spec_path]
+
+        # Track this spec in inheritance stack
+        self._inheritance_stack.append(spec_path)
 
         # Load the spec file
         try:
@@ -192,9 +248,16 @@ class SpecLoader:
         # Validate the spec
         self._validate_spec(factory_spec)
 
+        # Validate sizes
+        self._validate_spec_limits(factory_spec, spec_path)
+
         # Cache and return
         self.loaded_specs[spec_path] = factory_spec
         self.current_spec = factory_spec
+
+        # Remove from inheritance stack
+        self._inheritance_stack.pop()
+
         return factory_spec
 
     def _merge_specs(self, parent: Dict, child: Dict) -> Dict:
@@ -262,6 +325,53 @@ class SpecLoader:
         """Validate the spec for consistency and completeness"""
         validator = SpecValidator()
         validator.validate(spec)
+
+    def _validate_spec_limits(self, spec: FactorySpec, spec_path: str):
+        """
+        Validate that spec doesn't exceed size limits.
+
+        Args:
+            spec: FactorySpec to validate
+            spec_path: Path to spec (for error messages)
+
+        Raises:
+            SpecValidationError: If spec exceeds limits
+        """
+        errors = []
+
+        # Check resource count
+        if len(spec.resources) > MAX_RESOURCE_COUNT:
+            errors.append(
+                f"Too many resources: {len(spec.resources)} "
+                f"(max {MAX_RESOURCE_COUNT})"
+            )
+
+        # Check recipe count
+        if len(spec.recipes) > MAX_RECIPE_COUNT:
+            errors.append(
+                f"Too many recipes: {len(spec.recipes)} "
+                f"(max {MAX_RECIPE_COUNT})"
+            )
+
+        # Check module count
+        if len(spec.modules) > MAX_MODULE_COUNT:
+            errors.append(
+                f"Too many modules: {len(spec.modules)} "
+                f"(max {MAX_MODULE_COUNT})"
+            )
+
+        if errors:
+            raise SpecValidationError(
+                f"Spec '{spec_path}' exceeds size limits",
+                errors
+            )
+
+        logger.info(
+            f"Loaded spec '{spec_path}': "
+            f"{len(spec.resources)} resources, "
+            f"{len(spec.recipes)} recipes, "
+            f"{len(spec.modules)} modules"
+        )
 
     def create_resource_enum(self, spec: Optional[FactorySpec] = None):
         """Create ResourceType enum from spec"""

@@ -6,7 +6,8 @@ This module bridges the spec system with the modular architecture, allowing
 complete factory definition (both WHAT and HOW) through configuration files.
 """
 
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Tuple
+import logging
 from spec_loader import SpecLoader, FactorySpec
 from modular_factory_adapter import ModularFactory
 from modular_framework import SubsystemRegistry, UpdateStrategy, SubsystemConfig
@@ -18,6 +19,9 @@ from exceptions import (
 
 # Import custom subsystems to register them
 import custom_subsystems
+
+# Configure module logger
+logger = logging.getLogger(__name__)
 
 
 def create_factory_from_spec(
@@ -66,7 +70,7 @@ def create_factory_from_spec(
     resource_enum = loader.create_resource_enum(spec)
 
     # Create the modular factory
-    print(f"Creating ModularFactory from spec: {spec.metadata.get('name', 'Unknown')}")
+    logger.info(f"Creating ModularFactory from spec: {spec.metadata.get('name', 'Unknown')}")
     # ModularFactory expects orchestrator and config_manager, not config dict
     from modular_framework import ConfigManager
     config_manager = ConfigManager(base_config=config)
@@ -74,7 +78,7 @@ def create_factory_from_spec(
 
     # Add spec-defined subsystem implementations
     if spec.subsystem_implementations:
-        print(f"Configuring {len(spec.subsystem_implementations)} custom subsystems:")
+        logger.info(f"Configuring {len(spec.subsystem_implementations)} custom subsystems:")
 
         # Clear default subsystems first if we're replacing them with spec-defined ones
         factory.orchestrator.subsystems.clear()
@@ -89,13 +93,13 @@ def create_factory_from_spec(
                 subsystem = SubsystemRegistry.create(impl_name)
 
                 # Get configuration for this subsystem if available
-                subsystem_config = None
+                subsystem_config: Optional[SubsystemConfig] = None
                 if spec.subsystem_data and role in spec.subsystem_data:
                     subsystem_config = SubsystemConfig(spec.subsystem_data[role])
 
                 # Add to factory
                 factory.add_custom_subsystem(role, subsystem, subsystem_config)
-                print(f"  ✓ {role}: {impl_name}")
+                logger.info(f"  ✓ {role}: {impl_name}")
 
             except (ValueError, SubsystemNotFoundError) as e:
                 raise SubsystemConfigError(role, str(e)) from e
@@ -103,11 +107,11 @@ def create_factory_from_spec(
     # Set update strategy
     factory.set_update_strategy(update_strategy)
     if update_strategy != UpdateStrategy.SEQUENTIAL:
-        print(f"Update strategy: {update_strategy.name}")
+        logger.info(f"Update strategy: {update_strategy.name}")
 
     # Store spec data for subsystems that might need it
-    factory.spec = spec
-    factory.resource_enum = resource_enum
+    factory.spec = spec  # type: ignore
+    factory.resource_enum = resource_enum  # type: ignore
 
     return factory
 
@@ -168,20 +172,20 @@ def validate_spec_subsystems(spec_path: str) -> bool:
     spec = loader.load_spec(spec_path)
 
     available = SubsystemRegistry.list_available()
-    all_valid = True
+    all_valid: bool = True
 
     if spec.subsystem_implementations:
-        print("Validating subsystem implementations:")
+        logger.info("Validating subsystem implementations:")
 
         for role, impl_name in spec.subsystem_implementations.items():
             if impl_name in available:
-                print(f"  ✓ {role}: {impl_name}")
+                logger.info(f"  ✓ {role}: {impl_name}")
             else:
-                print(f"  ✗ {role}: {impl_name} NOT FOUND")
-                print(f"     Available: {', '.join(sorted(available))}")
+                logger.error(f"  ✗ {role}: {impl_name} NOT FOUND")
+                logger.error(f"     Available: {', '.join(sorted(available))}")
                 all_valid = False
     else:
-        print("No subsystem implementations defined in spec")
+        logger.info("No subsystem implementations defined in spec")
 
     return all_valid
 

@@ -1,0 +1,38 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-autodoc-typehints sphinx-rtd-theme
+
+      - name: Build documentation
+        run: |
+          # Future: sphinx-build -b html docs docs/_build
+          echo "Documentation build placeholder"
+
+      - name: Check for broken links
+        run: |
+          # Future: Check markdown links
+          echo "Link check placeholder"
