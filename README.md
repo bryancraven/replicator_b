@@ -444,6 +444,358 @@ CONFIG = {
 }
 ```
 
+## 🧪 Development & Testing
+
+### Testing Infrastructure
+
+The codebase includes a comprehensive pytest-based testing suite with 79 tests covering core functionality:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=. --cov-report=html
+
+# Run specific test file
+pytest tests/unit/test_exceptions.py -v
+
+# Run integration tests
+pytest tests/integration/ -v
+
+# Open coverage report
+open htmlcov/index.html
+```
+
+**Test Structure:**
+- `tests/unit/` - Unit tests for individual components (exceptions, spec loader, modular framework)
+- `tests/integration/` - End-to-end workflow tests
+- `tests/conftest.py` - Shared fixtures (EventBus, FactorySpec, temp directories)
+- **Current Status**: 79 tests, 71% pass rate, 20% baseline code coverage
+
+**Available Test Fixtures:**
+```python
+# Use in any test via conftest.py
+def test_example(event_bus, minimal_factory_spec, temp_spec_dir):
+    # event_bus - Fresh EventBus instance with bounded history
+    # minimal_factory_spec - Complete minimal factory configuration
+    # temp_spec_dir - Temporary directory for test spec files
+    assert event_bus.max_history == 100
+```
+
+### Exception Handling
+
+Custom exception hierarchy provides clear, actionable error messages:
+
+```python
+from exceptions import (
+    FactorySimulationError,      # Base exception
+    SpecValidationError,          # Spec validation failures
+    ResourceNotFoundError,        # Missing resources
+    SubsystemNotFoundError,       # Missing subsystems
+    InsufficientResourcesError,   # Resource shortages
+    ModuleNotAvailableError,      # Module unavailable
+    CircularDependencyError,      # Dependency cycles
+    # ... 25+ specialized exceptions
+)
+
+# Example usage with context
+try:
+    factory = create_factory_from_spec("specs/my_factory.json")
+except SpecValidationError as e:
+    print(f"Validation failed: {e}")
+    print(f"Specific errors:")
+    for error in e.errors:
+        print(f"  - {error}")
+except ResourceNotFoundError as e:
+    print(f"Resource '{e.resource_name}' not found in {e.context}")
+```
+
+**Exception Categories:**
+- `SpecError` - Spec loading, parsing, validation, inheritance
+- `ResourceError` - Resource availability, storage, allocation
+- `SubsystemError` - Subsystem registration, initialization, configuration
+- `ModuleError` - Module availability, capacity, failures
+- `TaskError` - Task blocking, dependencies, execution
+- `EventError` - Event publishing, queue overflow
+
+### Configuration Validation
+
+Runtime configuration validation using Pydantic catches errors before simulation starts:
+
+```python
+from config_validation import FactoryConfig, validate_config
+from pydantic import ValidationError
+
+# Option 1: Use Pydantic models directly
+config = FactoryConfig(
+    energy=EnergyConfig(
+        initial_solar_capacity_kw=200,
+        battery_capacity_kwh=1000
+    ),
+    processing=ProcessingConfig(
+        parallel_processing_limit=20
+    ),
+    features=FeatureToggles(
+        enable_degradation=True,
+        enable_quality_control=True
+    )
+)
+
+# Option 2: Validate existing dictionary
+try:
+    validated_config = validate_config({
+        "initial_solar_capacity_kw": 200,
+        "battery_capacity_kwh": 1000,
+        "parallel_processing_limit": 20
+    })
+except ValidationError as e:
+    print(f"Configuration invalid:")
+    for error in e.errors():
+        print(f"  {error['loc']}: {error['msg']}")
+    raise
+
+# Convert back to flat dictionary for legacy code
+config_dict = config.to_dict()
+```
+
+**Validation Features:**
+- Field-level validation (range checks, type enforcement, bounds)
+- Cross-field validation (consistency between related fields)
+- Auto-documentation (every field has description and constraints)
+- Clear error messages with specific field locations
+
+**Configuration Models:**
+- `EnergyConfig` - Solar capacity, battery, efficiency, weather
+- `ProcessingConfig` - Parallelization, batch sizes, throughput limits
+- `FeatureToggles` - Enable/disable simulation features
+- `PhysicalConstraints` - Factory area, storage volumes, cooling capacity
+- `QualityConfig` - Defect rates, tolerances, cleanroom standards
+- `TransportConfig` - AGV fleet size, routing algorithms, battery management
+
+### Performance Utilities
+
+Built-in profiling, caching, and debugging tools in `performance_utils.py`:
+
+#### Resource Calculation Cache
+```python
+from performance_utils import resource_cache, cached_resource_calculation
+
+# Decorator for automatic caching (10-100x speedup)
+@cached_resource_calculation
+def calculate_requirements(resource, quantity):
+    # Expensive recursive calculation
+    return requirements_dict
+
+# Check cache performance
+stats = resource_cache.get_stats()
+print(f"Cache hit rate: {stats['hit_rate']:.2%}")
+print(f"Size: {stats['size']}/{stats['max_size']}")
+
+# Clear if needed
+resource_cache.clear()
+```
+
+#### Performance Profiler
+```python
+from performance_utils import profiler
+
+# Enable profiling
+profiler.enable()
+
+# Decorate functions
+@profiler.profile("expensive_calculation")
+def calculate_something():
+    # Work here
+    pass
+
+# Run simulation
+factory.run_simulation(max_hours=1000)
+
+# Print results
+profiler.print_stats(top_n=20)
+
+# Output:
+# Function                         Calls   Total(s)  Avg(ms)  Min(ms)  Max(ms)
+# calculate_requirements           1000    5.234     5.234    2.1      15.8
+# update_subsystems                500     3.123     6.246    4.2      12.1
+```
+
+#### Debug Mode with Runtime Assertions
+```python
+from performance_utils import DebugMode
+
+# Enable debug mode (zero overhead when disabled)
+DebugMode.enable(strict=False)  # Log warnings only
+DebugMode.enable(strict=True)   # Raise exceptions
+
+# Domain-specific assertions
+DebugMode.assert_positive(quantity, "quantity")
+DebugMode.assert_range(efficiency, 0, 1, "efficiency")
+DebugMode.assert_energy_conservation(generated, consumed, stored)
+DebugMode.assert_resource_balance(produced, consumed, tolerance=0.01)
+DebugMode.check_invariant(total >= 0, "Resources cannot be negative")
+
+# Disable for production (no performance impact)
+DebugMode.disable()
+```
+
+### Type Checking
+
+Static type analysis with mypy:
+
+```bash
+# Check specific file
+mypy spec_loader.py
+
+# Check entire codebase
+mypy .
+
+# Check with strict mode
+mypy --strict modular_framework.py
+```
+
+**mypy Configuration** (`mypy.ini`):
+- Python 3.10+ type hints required
+- Gradual strict mode adoption (`exceptions.py` fully strict)
+- Per-module configuration for legacy code
+- Clear error messages with line numbers
+
+### Thread Safety
+
+EventBus and modular framework are fully thread-safe for parallel execution:
+
+**Thread-Safe Operations:**
+- Event subscription/unsubscription during runtime
+- Concurrent event publishing from multiple subsystems
+- Event history access without race conditions
+- Subsystem registration/unregistration
+
+**Implementation Pattern:**
+```python
+# Fine-grained locking prevents deadlocks
+with self._subscribers_lock:
+    # Copy handler list under lock
+    handlers = list(self.subscribers[event_type])
+
+# Call handlers WITHOUT lock (prevents deadlock)
+for handler in handlers:
+    handler(event)
+```
+
+**Parallel Execution:**
+```python
+from modular_framework import UpdateStrategy
+
+# Enable parallel subsystem updates
+factory.set_update_strategy(UpdateStrategy.PARALLEL)
+
+# Subsystems run concurrently in thread pool
+result = factory.run_simulation(max_hours=1000)
+```
+
+### Development Workflow
+
+**Complete development cycle:**
+
+```bash
+# 1. Set up environment
+pip install -e ".[dev]"  # Installs pytest, mypy, black, etc.
+
+# 2. Make changes
+# ... edit files ...
+
+# 3. Run type checking
+mypy .
+
+# 4. Run tests with coverage
+pytest tests/ -v --cov=.
+
+# 5. Check coverage report
+open htmlcov/index.html
+
+# 6. Run simulation to verify
+python3 self_replicating_factory_sim.py --spec specs/minimal.json --max-hours 100
+
+# 7. Analyze results
+python3 analyze_factory_sim.py
+```
+
+**Pre-commit Checklist:**
+- [ ] Tests pass: `pytest tests/ -v`
+- [ ] Type checking passes: `mypy .`
+- [ ] Code coverage maintained or improved
+- [ ] New exceptions added for error cases
+- [ ] Configuration validation updated for new fields
+- [ ] Documentation updated (docstrings, README)
+
+### Debugging Tips
+
+**Enable verbose logging:**
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+**Track event flow:**
+```python
+# Get complete event history
+events = factory.event_bus.get_history()
+
+# Filter by type and source
+resource_events = factory.event_bus.get_history(
+    event_type=EventType.RESOURCE_PRODUCED,
+    source="refining_module"
+)
+
+# Analyze event patterns
+from collections import Counter
+event_counts = Counter(e.type for e in events)
+print(f"Most common: {event_counts.most_common(5)}")
+
+# Check for dropped events (backpressure)
+if factory.event_bus.dropped_events > 0:
+    print(f"Warning: {factory.event_bus.dropped_events} events dropped")
+```
+
+**Profile performance bottlenecks:**
+```python
+from performance_utils import profiler
+
+profiler.enable()
+factory.run_simulation(max_hours=100)
+profiler.print_stats(top_n=20)  # Top 20 slowest functions
+```
+
+**Validate configuration:**
+```python
+from config_validation import validate_config
+from pydantic import ValidationError
+
+try:
+    config = validate_config(my_config_dict)
+    print("✓ Configuration valid")
+except ValidationError as e:
+    print("✗ Invalid configuration:")
+    for error in e.errors():
+        loc = " -> ".join(str(x) for x in error['loc'])
+        print(f"  {loc}: {error['msg']}")
+```
+
+**Check cache efficiency:**
+```python
+from performance_utils import resource_cache
+
+# Run simulation
+factory.run_simulation(max_hours=1000)
+
+# Check cache stats
+stats = resource_cache.get_stats()
+if stats['hit_rate'] < 0.5:
+    print(f"Warning: Low cache hit rate ({stats['hit_rate']:.2%})")
+    print(f"Consider increasing cache size (current: {stats['max_size']})")
+```
+
 ## 📊 Key Results
 
 ### Performance Metrics

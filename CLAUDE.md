@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an ultra-realistic self-replicating solar factory simulation with 250+ components, 16 specialized module types, and sophisticated systems for chemical processing, precision manufacturing, material transport, software production, waste management, and environmental control. The simulation reveals that true autonomous replication requires 800-1200 days and 2-3x more resources than simplified models suggest.
 
-**NEW: Fully Modular Architecture** - The system now features a complete modular framework where subsystems can be easily swapped, parallelized, and reconfigured without modifying core code. See MODULAR_GUIDE.md for details.
+**NEW: Fully Modular Architecture** - The system now features a complete modular framework where subsystems can be easily swapped, parallelized, and reconfigured without modifying core code. See README.md "Modular Architecture" section for details.
 
 ## Key Commands
 
@@ -262,7 +262,7 @@ The simulation now features a fully modular architecture with these components:
 - **`modular_factory_adapter.py`**: Wrappers for existing subsystems, modular factory implementation
 - **`custom_subsystems.py`**: Example advanced subsystems (genetic routing, swarm transport, predictive maintenance)
 - **`configs/modular_base.json`**: Hierarchical configuration with profiles
-- **`MODULAR_GUIDE.md`**: Complete documentation for the modular system
+- **See README.md**: Complete documentation for the modular system in "Modular Architecture" section
 
 ### Key Features
 - **Event-Driven Communication**: Subsystems communicate via publish/subscribe events
@@ -604,7 +604,159 @@ class SubsystemWrapper(SubsystemBase):
 
 ## Testing & Validation
 
-Run quick validation:
+### Pytest Testing Infrastructure
+
+The codebase includes a comprehensive pytest-based testing suite:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=. --cov-report=html
+
+# Run specific test module
+pytest tests/unit/test_exceptions.py -v
+
+# View coverage report
+open htmlcov/index.html
+```
+
+**Test Organization:**
+- `tests/unit/` - Unit tests (exceptions, spec loader, modular framework)
+- `tests/integration/` - End-to-end workflow tests
+- `tests/conftest.py` - Shared fixtures (event_bus, minimal_factory_spec, temp_spec_dir)
+- **Current Status**: 79 tests, 71% pass rate, 20% baseline coverage
+
+**Key Test Fixtures:**
+```python
+def test_example(event_bus, minimal_factory_spec, temp_spec_dir):
+    # event_bus - Fresh EventBus with bounded history
+    # minimal_factory_spec - Complete minimal factory config
+    # temp_spec_dir - Temporary directory for test files
+    pass
+```
+
+### Exception Handling
+
+Custom exception hierarchy provides clear, actionable error messages:
+
+```python
+from exceptions import (
+    FactorySimulationError,      # Base exception
+    SpecValidationError,          # Spec validation failures
+    ResourceNotFoundError,        # Missing resources
+    SubsystemNotFoundError,       # Missing subsystems
+    ModuleNotAvailableError,      # Module unavailable
+    CircularDependencyError,      # Dependency cycles
+)
+
+try:
+    factory = create_factory_from_spec("specs/my_factory.json")
+except SpecValidationError as e:
+    print(f"Validation errors: {e.errors}")
+except ResourceNotFoundError as e:
+    print(f"Missing resource: {e.resource_name} in {e.context}")
+```
+
+**Exception Categories:**
+- `SpecError` - Spec loading, parsing, validation, inheritance
+- `ResourceError` - Resource availability, storage, allocation
+- `SubsystemError` - Subsystem registration, initialization
+- `ModuleError` - Module availability, capacity, failures
+- `TaskError` - Task blocking, dependencies, execution
+- `EventError` - Event publishing, queue overflow
+
+### Configuration Validation
+
+Runtime configuration validation using Pydantic:
+
+```python
+from config_validation import FactoryConfig, validate_config
+
+# Validate config before running
+config = validate_config({
+    "initial_solar_capacity_kw": 200,
+    "parallel_processing_limit": 20,
+    "enable_degradation": True
+})
+
+# Or use Pydantic models directly
+config = FactoryConfig(
+    energy=EnergyConfig(initial_solar_capacity_kw=200),
+    processing=ProcessingConfig(parallel_processing_limit=20)
+)
+```
+
+**Benefits:**
+- Field-level validation (range checks, type enforcement)
+- Cross-field consistency checks
+- Clear error messages with field locations
+- Auto-documentation of config fields
+
+### Performance Utilities
+
+Built-in profiling and caching in `performance_utils.py`:
+
+```python
+from performance_utils import profiler, resource_cache, DebugMode
+
+# Enable profiling
+profiler.enable()
+
+@profiler.profile("expensive_calculation")
+def calculate_something():
+    pass
+
+# Enable debug mode assertions
+DebugMode.enable(strict=False)
+DebugMode.assert_energy_conservation(generated, consumed, stored)
+
+# Check cache efficiency
+stats = resource_cache.get_stats()
+print(f"Cache hit rate: {stats['hit_rate']:.2%}")
+```
+
+**Features:**
+- Resource calculation cache (10-100x speedup potential)
+- Performance profiler with timing statistics
+- Debug mode with zero overhead when disabled
+- Domain-specific assertions (energy conservation, resource balance)
+
+### Type Checking
+
+Static type checking with mypy:
+
+```bash
+# Check specific file
+mypy spec_loader.py
+
+# Check all files
+mypy .
+```
+
+Configuration in `mypy.ini`:
+- Python 3.10+ type hints
+- Gradual strict mode adoption
+- exceptions.py fully strict
+
+### Thread Safety
+
+EventBus and modular framework are fully thread-safe:
+
+```python
+# Fine-grained locking prevents deadlocks
+with self._subscribers_lock:
+    handlers = list(self.subscribers[event_type])
+
+# Call handlers without lock
+for handler in handlers:
+    handler(event)
+```
+
+### Quick Validation
+
+Run basic validation:
 ```bash
 python3 -c "from self_replicating_factory_sim import Factory, CONFIG; f = Factory(CONFIG); print('Factory initialized successfully')"
 ```
