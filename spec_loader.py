@@ -160,6 +160,26 @@ class SpecLoader:
         # Normalize path for comparison
         spec_path = os.path.abspath(spec_path)
 
+        # Path traversal protection: ensure spec is within allowed directory
+        # Allow current directory and specs/ directory
+        allowed_dirs = [
+            os.path.abspath(self.spec_dir),  # specs/ directory
+            os.path.abspath(os.getcwd()),    # current working directory
+        ]
+
+        # Check if spec_path is within any allowed directory
+        is_allowed = any(
+            spec_path.startswith(os.path.abspath(allowed_dir) + os.sep) or
+            spec_path == os.path.abspath(allowed_dir)
+            for allowed_dir in allowed_dirs
+        )
+
+        if not is_allowed:
+            raise SpecNotFoundError(
+                f"Access denied: spec path '{spec_path}' is outside allowed directories. "
+                f"Specs must be in: {', '.join(allowed_dirs)}"
+            )
+
         # Check if file exists
         if not os.path.exists(spec_path):
             raise SpecNotFoundError(spec_path)
