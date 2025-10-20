@@ -15,7 +15,6 @@ import json
 import time
 import threading
 from queue import Queue
-import copy
 import logging
 
 # Configure module logger

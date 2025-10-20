@@ -9,13 +9,11 @@ import heapq
 import json
 import math
 import random
-import sys
 import argparse
-import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Optional, Tuple
 from enum import Enum
-from collections import defaultdict, deque
+from collections import defaultdict
 
 # ===============================================================================
 # CONFIGURATION

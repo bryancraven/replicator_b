@@ -8,9 +8,7 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Circle
-from matplotlib.collections import PatchCollection
 import numpy as np
-from typing import Dict, List, Tuple, Set
 from enum import Enum
 
 class ResourceType(Enum):

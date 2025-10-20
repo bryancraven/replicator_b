@@ -5,8 +5,8 @@ Performance utilities for factory simulation
 This module provides caching, profiling, and optimization utilities.
 """
 
-from typing import Dict, Any, Callable, Optional, TypeVar, Generic
-from functools import lru_cache, wraps
+from typing import Dict, Any, Callable, Optional, TypeVar
+from functools import wraps
 from dataclasses import dataclass
 import time
 import logging

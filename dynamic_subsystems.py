@@ -7,10 +7,9 @@ with any ResourceType enum loaded from spec files, eliminating hardcoded
 resource references.
 """
 
-from typing import Dict, Any, Optional, Tuple, List
+from typing import Dict, Any, Optional, Tuple
 from enum import Enum
 from collections import defaultdict
-from dataclasses import dataclass, field
 import logging
 
 # Set up logging

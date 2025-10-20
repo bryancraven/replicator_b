@@ -20,7 +20,7 @@ from modular_framework import (
 from self_replicating_factory_sim import (
     TransportSystem, WasteStream, CleanRoomEnvironment,
     ThermalManagementSystem, SoftwareProductionSystem,
-    StorageSystem, EnergySystem, Factory, CONFIG, ResourceType
+    EnergySystem, Factory, CONFIG, ResourceType
 )
 
 
