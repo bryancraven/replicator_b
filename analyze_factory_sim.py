@@ -8,11 +8,9 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
-from matplotlib.patches import Rectangle, Circle
-from matplotlib.sankey import Sankey
-from collections import defaultdict, Counter
+from matplotlib.patches import Rectangle
+from collections import defaultdict
 import numpy as np
-from datetime import datetime
 
 def load_simulation_data(log_file="factory_simulation_log.json"):
     """Load and validate simulation data"""

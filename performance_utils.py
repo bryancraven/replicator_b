@@ -5,8 +5,8 @@ Performance utilities for factory simulation
 This module provides caching, profiling, and optimization utilities.
 """
 
-from typing import Dict, Any, Callable, Optional, TypeVar, Generic
-from functools import lru_cache, wraps
+from typing import Dict, Any, Callable, Optional, TypeVar
+from functools import wraps
 from dataclasses import dataclass
 import time
 import logging
@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 
 class ResourceCalculationCache:
     """
-    Cache for expensive resource requirement calculations.
+    Cache for expensive resource requirement calculations with proper LRU eviction.
 
     This cache stores results of recursive resource calculations to avoid
-    redundant computation.
+    redundant computation. Uses OrderedDict for efficient LRU implementation.
     """
 
     def __init__(self, max_size: int = 1000):
@@ -36,7 +36,8 @@ class ResourceCalculationCache:
         Args:
             max_size: Maximum number of cached entries
         """
-        self._cache: Dict[tuple, Dict[Any, float]] = {}
+        from collections import OrderedDict
+        self._cache: OrderedDict[tuple, Dict[Any, float]] = OrderedDict()
         self._max_size = max_size
         self._hits = 0
         self._misses = 0
@@ -55,6 +56,8 @@ class ResourceCalculationCache:
         key = (resource, quantity)
         if key in self._cache:
             self._hits += 1
+            # Move to end to mark as recently used (LRU)
+            self._cache.move_to_end(key)
             return self._cache[key].copy()
         else:
             self._misses += 1
@@ -62,21 +65,26 @@ class ResourceCalculationCache:
 
     def set(self, resource: Any, quantity: int, requirements: Dict[Any, float]) -> None:
         """
-        Cache a calculation result.
+        Cache a calculation result with proper LRU eviction.
 
         Args:
             resource: Resource type
             quantity: Quantity requested
             requirements: Calculated requirements
         """
-        # Implement simple LRU by removing oldest if at capacity
-        if len(self._cache) >= self._max_size:
-            # Remove first item (Python 3.7+ dicts maintain insertion order)
-            first_key = next(iter(self._cache))
-            del self._cache[first_key]
-
         key = (resource, quantity)
-        self._cache[key] = requirements.copy()
+
+        # If key exists, update and move to end
+        if key in self._cache:
+            self._cache[key] = requirements.copy()
+            self._cache.move_to_end(key)
+        else:
+            # If at capacity, remove least recently used (first item)
+            if len(self._cache) >= self._max_size:
+                self._cache.popitem(last=False)  # Remove first (oldest) item
+
+            # Add new item (will be at end)
+            self._cache[key] = requirements.copy()
 
     def clear(self) -> None:
         """Clear all cached entries"""

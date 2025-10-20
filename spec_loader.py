@@ -18,7 +18,7 @@ except ImportError:
     YAML_AVAILABLE = False
     logging.warning("PyYAML not available. Only JSON specs will be supported.")
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Set, Tuple, Union
+from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
 from collections import defaultdict
 import copy
@@ -159,6 +159,27 @@ class SpecLoader:
 
         # Normalize path for comparison
         spec_path = os.path.abspath(spec_path)
+
+        # Path traversal protection: ensure spec is within allowed directory
+        # Allow current directory, specs/ directory, and /tmp for tests
+        allowed_dirs = [
+            os.path.abspath(self.spec_dir),  # specs/ directory
+            os.path.abspath(os.getcwd()),    # current working directory
+            "/tmp",  # Allow temp directory for testing
+        ]
+
+        # Check if spec_path is within any allowed directory
+        is_allowed = any(
+            spec_path.startswith(os.path.abspath(allowed_dir) + os.sep) or
+            spec_path == os.path.abspath(allowed_dir)
+            for allowed_dir in allowed_dirs
+        )
+
+        if not is_allowed:
+            raise SpecNotFoundError(
+                f"Access denied: spec path '{spec_path}' is outside allowed directories. "
+                f"Specs must be in: {', '.join(allowed_dirs)}"
+            )
 
         # Check if file exists
         if not os.path.exists(spec_path):

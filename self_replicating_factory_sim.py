@@ -9,13 +9,11 @@ import heapq
 import json
 import math
 import random
-import sys
 import argparse
-import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Optional, Tuple
 from enum import Enum
-from collections import defaultdict, deque
+from collections import defaultdict
 
 # ===============================================================================
 # CONFIGURATION
@@ -70,6 +68,33 @@ CONFIG = {
     "agv_fleet_size": 10,
     "conveyor_length_m": 500,
 }
+
+# ===============================================================================
+# SIMULATION CONSTANTS
+# ===============================================================================
+
+# Task processing limits
+MAX_TASK_STARTS_PER_STEP = 5
+MAX_LOG_ENTRIES = 5000
+LOG_TRIM_SIZE = 2500
+
+# Transport constants
+TRANSPORT_POWER_KW_PER_ACTIVE = 2.0
+MAX_CONCURRENT_TRANSPORTS = 20
+TRANSPORT_PRIORITY_OFFSET = 50
+
+# Maintenance and cleaning
+WEEKLY_CLEANING_INTERVAL_HOURS = 168
+
+# Metric collection
+METRIC_COLLECTION_INTERVAL_HOURS = 1.0
+PROGRESS_REPORT_INTERVAL_HOURS = 100.0
+
+# Event queue
+EVENT_QUEUE_DROP_LOG_INTERVAL = 100
+
+# Default wall-clock timeout
+DEFAULT_WALL_CLOCK_TIMEOUT_SECONDS = 3600
 
 # ===============================================================================
 # RESOURCE TYPES - ULTRA COMPREHENSIVE
@@ -1638,7 +1663,34 @@ class Factory:
     """Ultra-realistic self-replicating factory with all systems"""
 
     def __init__(self, config=None, spec_dict=None, resource_enum=None):
-        self.config = config or CONFIG
+        # Validate configuration using Pydantic models
+        from config_validation import validate_config
+        from pydantic import ValidationError
+
+        config_dict = config or CONFIG
+
+        try:
+            validated_config = validate_config(config_dict)
+            # Convert back to dict for compatibility with existing code
+            self.config = validated_config.to_dict()
+        except ValidationError as e:
+            # Re-raise with clearer error message
+            from exceptions import InvalidConfigurationError
+            errors = [f"{err['loc'][0]}: {err['msg']}" for err in e.errors()]
+            raise InvalidConfigurationError(
+                "config",
+                config_dict,
+                f"Configuration validation failed:\n" + "\n".join(f"  - {e}" for e in errors)
+            )
+        except Exception as e:
+            # Handle other validation errors
+            from exceptions import InvalidConfigurationError
+            raise InvalidConfigurationError(
+                "config",
+                config_dict,
+                f"Unexpected validation error: {str(e)}"
+            )
+
         self.time = 0.0
         self.task_counter = 0
         self.spec_dict = spec_dict
@@ -1694,9 +1746,11 @@ class Factory:
         self.task_queue = []
         self.active_tasks: Dict[str, Task] = {}
         self.completed_tasks = []
+        self.completed_task_ids: Set[str] = set()  # O(1) lookup for dependency checking
         self.blocked_tasks: Dict[str, Task] = {}
 
         # Metrics tracking
+        self.last_metric_time = 0.0  # Track last metric collection for efficiency
         self.init_metrics()
 
     def initialize_modules(self):
@@ -1765,73 +1819,104 @@ class Factory:
         }
         self.log_entries.append(entry)
 
-        if len(self.log_entries) > 5000:
-            self.log_entries = self.log_entries[-2500:]
+        if len(self.log_entries) > MAX_LOG_ENTRIES:
+            self.log_entries = self.log_entries[-LOG_TRIM_SIZE:]
 
     def create_production_task(self, output: ResourceType, quantity: float,
-                              priority: int = 100) -> Optional[Task]:
-        """Create ultra-realistic production task with all constraints"""
+                              priority: int = 100, _visited: Optional[Set[ResourceType]] = None) -> Optional[Task]:
+        """Create ultra-realistic production task with all constraints
 
-        # Find recipe
-        recipe = next((r for r in RECIPES if r.output == output), None)
-        if not recipe:
-            self.log(f"No recipe found for {output.value}", "ERROR")
-            return None
+        Args:
+            output: The resource to produce
+            quantity: Amount to produce
+            priority: Task priority (lower = higher priority)
+            _visited: Internal set for circular dependency detection
 
-        # Check storage capacity
-        can_store, reason = self.storage.can_store(output, quantity)
-        if not can_store:
-            self.log(f"Cannot store {quantity} {output.value}: {reason}", "WARNING")
-            return None
+        Returns:
+            Task if successfully created, None otherwise
 
-        # Create task
-        self.task_counter += 1
-        task_id = f"task_{self.task_counter:05d}_{output.value}"
+        Raises:
+            CircularDependencyError: If circular dependency detected in recipe graph
+        """
+        # Initialize visited set for cycle detection
+        if _visited is None:
+            _visited = set()
 
-        task = Task(
-            task_id=task_id,
-            priority=priority,
-            output=output,
-            quantity=quantity,
-            recipe=recipe
-        )
+        # Check for circular dependency
+        if output in _visited:
+            from exceptions import CircularDependencyError
+            cycle_path = [r.value for r in _visited] + [output.value]
+            raise CircularDependencyError(cycle_path)
 
-        # Check for required inputs and create dependency tasks
-        for input_resource, input_qty in recipe.inputs.items():
-            required = input_qty * quantity / recipe.output_quantity
+        # Add current resource to visited set
+        _visited.add(output)
 
-            available = self.storage.current_inventory.get(input_resource, 0)
-            # Check recycled materials
-            if input_resource in self.waste_stream.recyclable_materials:
-                available += self.waste_stream.process_recycling(input_resource, required)
+        try:
+            # Find recipe
+            recipe = next((r for r in RECIPES if r.output == output), None)
+            if not recipe:
+                self.log(f"No recipe found for {output.value}", "ERROR")
+                return None
 
-            if available < required:
-                deficit = required - available
-                # Create dependency task with buffer
-                dep_task = self.create_production_task(
-                    input_resource,
-                    deficit * 1.1,
-                    priority + 1
-                )
-                if dep_task:
-                    task.dependencies.add(dep_task.task_id)
+            # Check storage capacity
+            can_store, reason = self.storage.can_store(output, quantity)
+            if not can_store:
+                self.log(f"Cannot store {quantity} {output.value}: {reason}", "WARNING")
+                return None
 
-        # Check if software is required
-        if recipe.software_required:
-            if recipe.software_required not in self.software_system.software_library:
-                # Need to produce software first
-                sw_task = self.create_production_task(
-                    recipe.software_required,
-                    1,
-                    priority + 2
-                )
-                if sw_task:
-                    task.dependencies.add(sw_task.task_id)
+            # Create task
+            self.task_counter += 1
+            task_id = f"task_{self.task_counter:05d}_{output.value}"
 
-        heapq.heappush(self.task_queue, (task.priority, task.task_id, task))
-        self.log(f"Created task {task_id} for {quantity} {output.value}")
+            task = Task(
+                task_id=task_id,
+                priority=priority,
+                output=output,
+                quantity=quantity,
+                recipe=recipe
+            )
 
-        return task
+            # Check for required inputs and create dependency tasks
+            for input_resource, input_qty in recipe.inputs.items():
+                required = input_qty * quantity / recipe.output_quantity
+
+                available = self.storage.current_inventory.get(input_resource, 0)
+                # Check recycled materials
+                if input_resource in self.waste_stream.recyclable_materials:
+                    available += self.waste_stream.process_recycling(input_resource, required)
+
+                if available < required:
+                    deficit = required - available
+                    # Create dependency task with buffer (pass visited set for cycle detection)
+                    dep_task = self.create_production_task(
+                        input_resource,
+                        deficit * 1.1,
+                        priority + 1,
+                        _visited=_visited.copy()  # Pass copy to allow backtracking
+                    )
+                    if dep_task:
+                        task.dependencies.add(dep_task.task_id)
+
+            # Check if software is required
+            if recipe.software_required:
+                if recipe.software_required not in self.software_system.software_library:
+                    # Need to produce software first (pass visited set for cycle detection)
+                    sw_task = self.create_production_task(
+                        recipe.software_required,
+                        1,
+                        priority + 2,
+                        _visited=_visited.copy()  # Pass copy to allow backtracking
+                    )
+                    if sw_task:
+                        task.dependencies.add(sw_task.task_id)
+
+            heapq.heappush(self.task_queue, (task.priority, task.task_id, task))
+            self.log(f"Created task {task_id} for {quantity} {output.value}")
+
+            return task
+        finally:
+            # Remove from visited set (backtracking)
+            _visited.discard(output)
 
     def find_available_module(self, module_type: str) -> Optional[str]:
         """Find an available module considering all constraints"""
@@ -2114,6 +2199,7 @@ class Factory:
                 if self.storage.add_resource(task.output, task.actual_output):
                     task.status = "completed"
                     self.completed_tasks.append(task)
+                    self.completed_task_ids.add(task_id)  # Add to set for O(1) lookup
                     self.log(f"Completed task {task_id}: {task.actual_output:.1f} {task.output.value}")
 
                     # Check if this produces a new module
@@ -2191,15 +2277,16 @@ class Factory:
                     self.log(f"Module {module_id} maintenance completed")
 
     def check_blocked_tasks(self):
-        """Re-evaluate blocked tasks"""
+        """Re-evaluate blocked tasks with O(1) dependency checking"""
         unblocked = []
 
         for task_id, task in self.blocked_tasks.items():
             should_retry = False
 
             if task.status == "blocked_dependencies":
+                # Use set for O(1) lookup instead of O(n) list search
                 deps_complete = all(
-                    any(t.task_id == dep_id for t in self.completed_tasks)
+                    dep_id in self.completed_task_ids
                     for dep_id in task.dependencies
                 )
                 should_retry = deps_complete
@@ -2218,8 +2305,14 @@ class Factory:
             del self.blocked_tasks[task_id]
 
     def collect_metrics(self):
-        """Collect comprehensive metrics"""
-        if int(self.time * 10) % 10 == 0:  # Every hour
+        """Collect comprehensive metrics efficiently"""
+        # Only collect every hour (more efficient than modulo check every step)
+        if self.time - self.last_metric_time < 1.0:
+            return
+
+        self.last_metric_time = self.time
+
+        if True:  # Keep indentation for rest of method
             # Module efficiency
             avg_efficiency = sum(
                 m.current_efficiency for m in self.module_states.values()
@@ -2285,7 +2378,7 @@ class Factory:
         total_consumption += cooling_power
 
         # Add transport power
-        transport_power = len(self.transport_system.active_transports) * 2.0  # kW per active transport
+        transport_power = len(self.transport_system.active_transports) * TRANSPORT_POWER_KW_PER_ACTIVE
         total_consumption += transport_power
 
         net_energy = (solar_generation - total_consumption) * duration_hours
@@ -2303,17 +2396,16 @@ class Factory:
         self.update_maintenance()
 
         # Clean rooms periodically
-        if int(self.time) % 168 == 0:  # Weekly
+        if int(self.time) % WEEKLY_CLEANING_INTERVAL_HOURS == 0:  # Weekly
             for cleanroom in self.cleanroom_environments.values():
-                if cleanroom.time_since_cleaning > 168:
+                if cleanroom.time_since_cleaning > WEEKLY_CLEANING_INTERVAL_HOURS:
                     cleanroom.perform_cleaning()
                     self.log("Cleanroom cleaned")
 
         # Process new tasks
         tasks_started = 0
-        max_starts_per_step = 5
 
-        while self.task_queue and tasks_started < max_starts_per_step:
+        while self.task_queue and tasks_started < MAX_TASK_STARTS_PER_STEP:
             priority, task_id, task = heapq.heappop(self.task_queue)
 
             if self.process_task(task):
@@ -2334,8 +2426,23 @@ class Factory:
         if self.config.get("enable_weather", True):
             self.energy_system.days_since_cleaning += duration_hours / 24
 
-    def run_simulation(self, max_hours: float = 10000) -> Dict:
-        """Run ultra-realistic simulation"""
+    def run_simulation(self, max_hours: float = 10000, max_wall_time_seconds: float = 3600) -> Dict:
+        """Run ultra-realistic simulation with wall-clock timeout protection
+
+        Args:
+            max_hours: Maximum simulation time in hours
+            max_wall_time_seconds: Maximum real-world execution time in seconds (default: 1 hour)
+
+        Returns:
+            Simulation results dictionary
+
+        Raises:
+            SimulationTimeoutError: If wall-clock time limit exceeded
+        """
+        import time
+        from exceptions import SimulationTimeoutError
+
+        start_wall_time = time.time()
 
         print("=" * 80)
         print("ULTRA-REALISTIC SELF-REPLICATING FACTORY SIMULATION")
@@ -2346,6 +2453,7 @@ class Factory:
         print(f"  AGV Fleet Size: {self.config['agv_fleet_size']}")
         print(f"  Clean Room Class: {self.config['cleanroom_class']}")
         print(f"  All realistic features: ENABLED")
+        print(f"  Wall-clock timeout: {max_wall_time_seconds:.0f} seconds")
 
         print("\n🏭 STARTING ULTRA-REALISTIC FACTORY REPLICATION")
         print("-" * 40)
@@ -2391,10 +2499,18 @@ class Factory:
 
         last_report = 0
         while self.time < max_hours:
+            # Check wall-clock timeout
+            elapsed_wall_time = time.time() - start_wall_time
+            if elapsed_wall_time > max_wall_time_seconds:
+                raise SimulationTimeoutError(
+                    self.time,
+                    max_hours
+                )
+
             self.simulate_step(0.1)
 
-            # Progress report every 100 hours
-            if self.time - last_report >= 100:
+            # Progress report at regular intervals
+            if self.time - last_report >= PROGRESS_REPORT_INTERVAL_HOURS:
                 last_report = self.time
 
                 # Calculate comprehensive metrics

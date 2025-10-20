@@ -6,8 +6,8 @@ This module provides validated configuration schemas for the factory simulation,
 ensuring that all configuration parameters are valid at runtime.
 """
 
-from typing import Dict, Any, Optional, List
-from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Dict, Any, Optional
+from pydantic import BaseModel, Field, model_validator
 from enum import Enum
 
 

@@ -6,19 +6,17 @@ This module bridges the spec system with the modular architecture, allowing
 complete factory definition (both WHAT and HOW) through configuration files.
 """
 
-from typing import Optional, Any, Dict, List, Tuple
+from typing import Optional, Dict
 import logging
-from spec_loader import SpecLoader, FactorySpec
+from spec_loader import SpecLoader
 from modular_factory_adapter import ModularFactory
 from modular_framework import SubsystemRegistry, UpdateStrategy, SubsystemConfig
 from exceptions import (
     SubsystemNotFoundError,
-    SubsystemConfigError,
-    SpecNotFoundError
+    SubsystemConfigError
 )
 
 # Import custom subsystems to register them
-import custom_subsystems
 
 # Configure module logger
 logger = logging.getLogger(__name__)

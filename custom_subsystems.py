@@ -6,7 +6,7 @@ These subsystems show how to create specialized implementations for different
 aspects of the factory simulation.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List
 from collections import defaultdict, deque
 import random
 import math
@@ -35,6 +35,16 @@ class GeneticRoutingTransport(SubsystemBase):
         self.active_transports = {}
 
     def initialize(self, config: SubsystemConfig, event_bus):
+        """
+        Initialize genetic routing transport system.
+
+        Args:
+            config: Subsystem configuration with optional parameters:
+                - population_size (int): Size of route population for GA (default: 50)
+                - mutation_rate (float): Probability of mutation (default: 0.1)
+                - generations_per_update (int): GA generations per update (default: 5)
+            event_bus: Event bus for inter-subsystem communication
+        """
         super().initialize(config, event_bus)
         self.population_size = config.get("population_size", 50)
         self.mutation_rate = config.get("mutation_rate", 0.1)
@@ -44,6 +54,23 @@ class GeneticRoutingTransport(SubsystemBase):
         event_bus.subscribe(EventType.TRANSPORT_REQUESTED, self.handle_event)
 
     def update(self, delta_time: float, context: SimulationContext) -> Dict[str, Any]:
+        """
+        Update transport system using genetic algorithm for route optimization.
+
+        This method:
+        1. Evolves route population using genetic algorithm
+        2. Processes active transports (decrements time, completes finished)
+        3. Starts new transports using optimized routes
+        4. Publishes transport events
+
+        Args:
+            delta_time: Elapsed simulation time since last update (hours)
+            context: Current simulation state (resources, modules, tasks)
+
+        Returns:
+            Dict containing:
+                - completed (int): Number of transports completed this update
+        """
         if not self.enabled:
             return {}
 

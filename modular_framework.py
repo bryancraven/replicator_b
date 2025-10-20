@@ -15,7 +15,6 @@ import json
 import time
 import threading
 from queue import Queue
-import copy
 import logging
 
 # Configure module logger
@@ -51,8 +50,15 @@ class SimulationContext:
     metrics: Dict[str, Any] = field(default_factory=dict)
 
     def copy(self) -> 'SimulationContext':
-        """Create a deep copy of the context"""
-        return copy.deepcopy(self)
+        """Create an efficient copy of the context (shallow copy of immutable data)"""
+        return SimulationContext(
+            time=self.time,  # Immutable
+            delta_time=self.delta_time,  # Immutable
+            resources=self.resources.copy(),  # Shallow dict copy (sufficient for parallel subsystems)
+            modules=self.modules.copy(),  # Shallow dict copy
+            tasks=self.tasks[:],  # List slice copy
+            metrics=self.metrics.copy()  # Shallow dict copy
+        )
 
 
 # ===============================================================================
@@ -143,17 +149,36 @@ class EventBus:
         Publish an event to all subscribers.
 
         If queue is full, the event is dropped and logged.
+        Raises EventQueueOverflowError if drop rate is critical.
         """
+        from queue import Full
         try:
             self.event_queue.put_nowait(event)
             self.event_history.append(event)  # deque automatically maintains maxlen
-        except Exception:  # Queue.Full inherits from Exception
+        except Full:
             self.dropped_events += 1
-            if self.dropped_events % 100 == 1:  # Log every 100th dropped event
+
+            # Import constant from self_replicating_factory_sim if available, else use default
+            try:
+                from self_replicating_factory_sim import EVENT_QUEUE_DROP_LOG_INTERVAL
+                log_interval = EVENT_QUEUE_DROP_LOG_INTERVAL
+            except ImportError:
+                log_interval = 100  # Default fallback
+
+            # Log at regular intervals
+            if self.dropped_events % log_interval == 1:
                 logger.warning(
                     f"Event queue full (size={self.max_queue_size}), "
                     f"dropped {self.dropped_events} events total. "
                     f"Latest dropped: {event}"
+                )
+
+            # Raise exception if drop rate is critical (>10% of queue size)
+            if self.dropped_events > self.max_queue_size * 0.1:
+                from exceptions import EventQueueOverflowError
+                raise EventQueueOverflowError(
+                    self.event_queue.qsize(),
+                    self.max_queue_size
                 )
 
     def process_events(self):
