@@ -1,6 +1,6 @@
 # Self-Replicating Solar Factory Simulation
 
-A detailed simulation modeling a complete self-replicating factory with 250+ components, 16 specialized module types, and a **fully modular architecture** for extensibility and experimentation.
+A detailed simulation modeling a self-replicating solar factory with **~140 resources**, **14 module specs**, and a **fully modular architecture** for extensibility and experimentation. See [docs/REALISM.md](docs/REALISM.md) for known limits.
 
 ![Factory System Overview](factory_system_diagram.png)
 
@@ -8,13 +8,13 @@ A detailed simulation modeling a complete self-replicating factory with 250+ com
 
 This simulation addresses the question: **What is the true complexity and resource requirement for a solar-powered factory system that starts from completely raw materials and builds a full copy of itself?**
 
-The detailed model reveals that autonomous replication requires approximately 2-3x more resources and time than simplified models suggest, primarily due to software development overhead, transport logistics, quality control, thermal management, and maintenance downtime.
+The model is intended to explore why autonomous replication is harder than toy models suggest; quantitative 2–3× / 800–1200-day claims are **not currently backed by a reproducible baseline** (see docs/REALISM.md), primarily due to software development overhead, transport logistics, quality control, thermal management, and maintenance downtime.
 
 ## ✨ Key Features
 
 ### Core Functionality
-- **250+ Components**: From raw ores to microprocessors
-- **16 Specialized Modules**: Mining, chemical, CNC, cleanroom, transport, etc.
+- **~140 Resources**: From raw ores to modules (not 250+ — see docs/REALISM.md)
+- **14 Module Specs**: Mining, chemical, CNC, cleanroom, transport, etc.
 - **Spec System**: Define complete factories in external configuration files
 - **Modular Architecture**: Swappable subsystems, parallel execution, event-driven
 - **Comprehensive Systems**: Thermal management, contamination control, AGV routing
@@ -73,7 +73,7 @@ python3 visualize_factory_system.py  # Requires matplotlib
 
 ### Spec-Based Configuration (NEW)
 ```bash
-# Default simulation (ultra-realistic with 250+ components)
+# Default simulation (~140 resources; see docs/REALISM.md)
 python3 self_replicating_factory_sim.py
 
 # Minimal spec for faster testing (~40 components)
@@ -153,7 +153,8 @@ result = factory.run_simulation(max_hours=1000)
 - `spec_loader.py` - Dynamic spec loading and validation system
 - `factory_builder.py` - Creates complete factories from spec files (NEW)
 - `specs/` - Factory specification files
-  - `default.spec` - Ultra-realistic factory with 250+ components
+  - `default.spec` - Full factory BOM (~140 resources)
+  - `bootstrap.spec` - Seed modules only; honest bootstrap profile
   - `default_recipes.yaml` - Complete recipe chains
   - `minimal.json` - Simplified ~40 component factory
 
@@ -208,7 +209,8 @@ result = factory.run_simulation(max_hours=2000)
 - **No-Code Factory Creation**: Create complete modular factories without writing Python code
 
 ### Available Specs
-- **`specs/default.spec`**: Ultra-realistic factory with 250+ components and 16 modules
+- **`specs/default.spec`**: Full factory BOM (~140 resources, 14 module specs)
+- **`specs/bootstrap.spec`**: Bootstrap seed profile (few starter modules)
 - **`specs/minimal.json`**: Simplified factory with ~40 components for faster simulation
 
 ### Command-Line Arguments
@@ -386,7 +388,7 @@ factory.set_update_strategy(UpdateStrategy.PRIORITY)
 15. **Power Module** - Solar and battery systems
 16. **Control Module** - SCADA and automation
 
-### 250+ Components Including
+### Components Including (~140 resources)
 - **Chemical Products**: Acids, solvents, polymers, electrolytes
 - **Precision Parts**: Ball screws, linear guides, precision bearings
 - **Electronics**: 40+ types from transistors to microprocessors
@@ -959,7 +961,7 @@ result = hybrid_factory.run_simulation()
 
 ### Production Dependency Graph
 ![Production Dependencies](factory_production_graph.png)
-*Detailed production dependency graph showing all 250+ components and their relationships*
+*Detailed production dependency graph showing component relationships*
 
 ### Simulation Analysis Dashboard
 ![Analysis Dashboard](factory_simulation_analysis_ultra.png)

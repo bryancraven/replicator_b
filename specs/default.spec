@@ -1,7 +1,7 @@
 metadata:
   name: "Ultra-Realistic Self-Replicating Factory"
   version: "1.0.0"
-  description: "Complete factory with 250+ components and 16 specialized modules"
+  description: "Factory BOM/scheduling model with ~140 resources and 14 module specs (see docs/REALISM.md)"
   author: "Factory Simulation Team"
 
 resources:
@@ -34,6 +34,30 @@ resources:
     density: 2.2
     storage_temp: 25
     contamination_sensitivity: 0.1
+  SULFUR_ORE:
+    density: 2.0
+    storage_temp: 25
+    contamination_sensitivity: 0.2
+  SALT:
+    density: 2.2
+    storage_temp: 25
+    contamination_sensitivity: 0.1
+  LIMESTONE:
+    density: 2.7
+    storage_temp: 25
+    contamination_sensitivity: 0.1
+  WATER:
+    density: 1.0
+    storage_temp: 20
+    contamination_sensitivity: 0.1
+  LEAD_ORE:
+    density: 6.5
+    storage_temp: 25
+    contamination_sensitivity: 0.2
+  TIN_ORE:
+    density: 5.0
+    storage_temp: 25
+    contamination_sensitivity: 0.2
 
   # Chemical products
   SULFURIC_ACID:

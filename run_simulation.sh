@@ -9,6 +9,12 @@ NC='\033[0m' # No Color
 # Virtual environment name
 VENV_NAME="venv"
 
+# Defaults: fast minimal demo (override with args, e.g. --spec specs/default.spec)
+SIM_ARGS=("--spec" "specs/minimal.json" "--max-hours" "200")
+if [ "$#" -gt 0 ]; then
+    SIM_ARGS=("$@")
+fi
+
 echo -e "${GREEN}=== Self-Replicating Factory Simulation Runner ===${NC}"
 echo ""
 
@@ -29,27 +35,29 @@ fi
 echo -e "${YELLOW}Activating virtual environment...${NC}"
 source $VENV_NAME/bin/activate
 
-# Check if matplotlib is installed (needed for analysis visualization)
-python -c "import matplotlib" 2>/dev/null
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}Installing matplotlib for visualization...${NC}"
-    pip install matplotlib --quiet
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}Warning: Could not install matplotlib. Visualization will be skipped.${NC}"
-    else
-        echo -e "${GREEN}matplotlib installed successfully${NC}"
-    fi
+# Prefer editable install when packaging is available
+if [ -f "pyproject.toml" ]; then
+    echo -e "${YELLOW}Installing package (editable)...${NC}"
+    pip install -e ".[viz]" --quiet
 else
-    echo -e "${GREEN}matplotlib is already installed${NC}"
+    python -c "import matplotlib" 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}Installing matplotlib for visualization...${NC}"
+        pip install matplotlib --quiet
+    fi
 fi
 
 echo ""
 echo -e "${YELLOW}Starting factory simulation...${NC}"
-echo -e "${YELLOW}This may take a few minutes depending on configuration...${NC}"
+echo -e "${YELLOW}Args: ${SIM_ARGS[*]}${NC}"
 echo ""
 
-# Run the main simulation
-python3 self_replicating_factory_sim.py
+# Run the main simulation (shim or installed entry point)
+if command -v factory-sim >/dev/null 2>&1; then
+    factory-sim "${SIM_ARGS[@]}"
+else
+    python3 self_replicating_factory_sim.py "${SIM_ARGS[@]}"
+fi
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Simulation failed to run${NC}"
@@ -92,9 +100,8 @@ echo ""
 echo "Output files generated:"
 echo "  - factory_simulation_log.json (detailed simulation data)"
 
-# Check which visualization files were created
-if [ -f "factory_simulation_analysis_enhanced.png" ]; then
-    echo "  - factory_simulation_analysis_enhanced.png (simulation metrics dashboard)"
+if [ -f "factory_simulation_analysis_ultra.png" ]; then
+    echo "  - factory_simulation_analysis_ultra.png (simulation metrics dashboard)"
 fi
 
 if [ -f "factory_system_diagram.png" ]; then
@@ -107,10 +114,10 @@ fi
 
 # Try to open visualizations if on macOS
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    if [ -f "factory_simulation_analysis_enhanced.png" ] || [ -f "factory_system_diagram.png" ]; then
+    if [ -f "factory_simulation_analysis_ultra.png" ] || [ -f "factory_system_diagram.png" ]; then
         echo ""
         echo -e "${YELLOW}Opening visualizations...${NC}"
-        [ -f "factory_simulation_analysis_enhanced.png" ] && open factory_simulation_analysis_enhanced.png 2>/dev/null
+        [ -f "factory_simulation_analysis_ultra.png" ] && open factory_simulation_analysis_ultra.png 2>/dev/null
         [ -f "factory_system_diagram.png" ] && open factory_system_diagram.png 2>/dev/null
     fi
 fi

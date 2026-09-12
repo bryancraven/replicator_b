@@ -49,11 +49,54 @@ recipes:
     time_hours: 0.5
     required_module: mining
 
-  # Chemical products
+  - output: SULFUR_ORE
+    output_quantity: 200
+    inputs: {}
+    energy_kwh: 25
+    time_hours: 0.4
+    required_module: mining
+
+  - output: SALT
+    output_quantity: 500
+    inputs: {}
+    energy_kwh: 15
+    time_hours: 0.3
+    required_module: mining
+
+  - output: LIMESTONE
+    output_quantity: 500
+    inputs: {}
+    energy_kwh: 20
+    time_hours: 0.4
+    required_module: mining
+
+  - output: WATER
+    output_quantity: 1000
+    inputs: {}
+    energy_kwh: 5
+    time_hours: 0.1
+    required_module: mining
+
+  - output: LEAD_ORE
+    output_quantity: 200
+    inputs: {}
+    energy_kwh: 40
+    time_hours: 0.8
+    required_module: mining
+
+  - output: TIN_ORE
+    output_quantity: 100
+    inputs: {}
+    energy_kwh: 45
+    time_hours: 1.0
+    required_module: mining
+
+  # Chemical products (plausible precursors — not carbon-ore acids)
   - output: SULFURIC_ACID
     output_quantity: 100
     inputs:
-      CARBON_ORE: 50
+      SULFUR_ORE: 40
+      WATER: 60
     energy_kwh: 80
     time_hours: 2.0
     required_module: chemical
@@ -120,17 +163,20 @@ recipes:
   - output: HYDROCHLORIC_ACID
     output_quantity: 100
     inputs:
-      CARBON_ORE: 40
-    energy_kwh: 70
-    time_hours: 1.8
+      SALT: 50
+      SULFURIC_ACID: 40
+      WATER: 30
+    energy_kwh: 60
+    time_hours: 1.5
     required_module: chemical
 
   - output: SODIUM_HYDROXIDE
     output_quantity: 100
     inputs:
-      CARBON_ORE: 60
-    energy_kwh: 90
-    time_hours: 2.2
+      SALT: 80
+      WATER: 100
+    energy_kwh: 150
+    time_hours: 3.0
     required_module: chemical
 
   - output: SILICONE
@@ -237,17 +283,17 @@ recipes:
   - output: LEAD
     output_quantity: 100
     inputs:
-      IRON_ORE: 120
+      LEAD_ORE: 150
     energy_kwh: 80
-    time_hours: 1.5
+    time_hours: 0.8
     required_module: refining
 
   - output: TIN
     output_quantity: 100
     inputs:
-      IRON_ORE: 110
-    energy_kwh: 70
-    time_hours: 1.3
+      TIN_ORE: 140
+    energy_kwh: 90
+    time_hours: 1.0
     required_module: refining
 
   # Precision mechanical components

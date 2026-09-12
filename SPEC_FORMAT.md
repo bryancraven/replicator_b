@@ -27,7 +27,8 @@ python3 self_replicating_factory_sim.py --spec specs/genetic_optimized.json --mo
 
 ### Available Specs
 
-- **`specs/default.spec`**: Ultra-realistic factory with 250+ components and 16 modules
+- **`specs/default.spec`**: Full factory BOM (~140 resources, 14 module specs)
+- **`specs/bootstrap.spec`**: Bootstrap seed profile (few starter modules + seed inventory)
 - **`specs/minimal.spec`**: Simplified factory with ~50 components for faster simulation
 - **`specs/genetic_optimized.json`**: Factory using genetic algorithms and ML optimization (modular)
 - **`specs/high_reliability.json`**: Factory optimized for maximum uptime and reliability (modular)

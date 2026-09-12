@@ -1,14 +1,14 @@
-# Core simulation (no dependencies required)
-# The main simulation runs with Python 3.x standard library only
+# Core research toolkit
+pyyaml>=6.0,<7.0
+numpy>=1.22.0,<3.0.0
+pydantic>=2.0.0,<3.0.0
 
-# Optional: For using YAML spec files (.spec, .yaml)
-pyyaml>=6.0
+# Visualization (matplotlib dashboards / system diagrams)
+matplotlib>=3.5.0,<4.0.0
 
-# Optional: For visualization and analysis
-matplotlib>=3.5.0
-
-# Optional: For configuration validation
-pydantic>=2.0.0
+# Interactive lab UI
+streamlit>=1.28.0,<2.0.0
+plotly>=5.18.0,<6.0.0
 
 # Development and testing
 pytest>=7.0.0

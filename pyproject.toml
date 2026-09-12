@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "factory-simulator"
-version = "1.0.0"
-description = "Ultra-realistic self-replicating solar factory simulation with modular architecture"
+version = "1.1.0"
+description = "Self-replicating solar factory simulation — interactive research toolkit"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -19,17 +19,23 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering",
 ]
-keywords = ["simulation", "factory", "manufacturing", "self-replication", "modular"]
+keywords = ["simulation", "factory", "manufacturing", "self-replication", "research"]
 
 dependencies = [
     "pyyaml>=6.0,<7.0",
+    "numpy>=1.22.0,<3.0.0",
+    "pydantic>=2.0.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
 viz = [
     "matplotlib>=3.5.0,<4.0.0",
+]
+ui = [
+    "streamlit>=1.28.0,<2.0.0",
+    "plotly>=5.18.0,<6.0.0",
 ]
 validation = [
     "pydantic>=2.0.0,<3.0.0",
@@ -41,20 +47,25 @@ dev = [
     "mypy>=0.950",
 ]
 all = [
-    "factory-simulator[viz,validation,dev]",
+    "factory-simulator[viz,ui,validation,dev]",
 ]
 
 [project.scripts]
-factory-sim = "self_replicating_factory_sim:main"
-factory-builder = "factory_builder:main"
+factory-sim = "factory_simulator.sim:main"
+factory-builder = "factory_simulator.factory_builder:main"
+factory-lab = "factory_simulator.ui.app:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/factory-simulator"
-Issues = "https://github.com/yourusername/factory-simulator/issues"
-Documentation = "https://github.com/yourusername/factory-simulator#readme"
+Homepage = "https://github.com/bryancraven/replicator_b"
+Issues = "https://github.com/bryancraven/replicator_b/issues"
+Documentation = "https://github.com/bryancraven/replicator_b#readme"
 
-[tool.setuptools]
-packages = ["factory_simulator"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["factory_simulator*"]
+
+[tool.setuptools.package-data]
+factory_simulator = ["py.typed"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -67,7 +78,7 @@ addopts = [
     "-ra",
     "--showlocals",
     "--strict-markers",
-    "--cov=.",
+    "--cov=factory_simulator",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--disable-warnings",
@@ -81,13 +92,12 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["."]
+source = ["factory_simulator"]
 omit = [
     "*/tests/*",
     "*/venv/*",
     "*/__pycache__/*",
     "*/site-packages/*",
-    "setup.py",
 ]
 
 [tool.coverage.report]
@@ -107,8 +117,7 @@ target-version = ["py310", "py311", "py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
-  # directories
-  \.eggs
+    \.eggs
   | \.git
   | \.hg
   | \.mypy_cache
@@ -153,7 +162,15 @@ module = "pydantic.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "exceptions"
+module = "streamlit.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "plotly.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "factory_simulator.exceptions"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
@@ -161,20 +178,20 @@ disallow_incomplete_defs = true
 line-length = 100
 target-version = "py310"
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "C",   # flake8-comprehensions
-    "B",   # flake8-bugbear
-    "UP",  # pyupgrade
+    "E",
+    "W",
+    "F",
+    "I",
+    "C",
+    "B",
+    "UP",
 ]
 ignore = [
-    "E501",  # line too long (handled by black)
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "E501",
+    "B008",
+    "C901",
 ]
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]  # Unused imports
-"tests/**/*.py" = ["F401", "F811"]  # Unused imports, redefinition
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["F401", "F811"]
