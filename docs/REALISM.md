@@ -8,7 +8,7 @@ Canonical prioritized backlog: **[MAJOR_FIXES.md](./MAJOR_FIXES.md)** (manufactu
 
 | Claim often seen in older docs | Actual |
 |--------------------------------|--------|
-| “250+ components” | **~138** `ResourceType` values in `factory_simulator/sim.py`; **~140** in `specs/default.spec` |
+| “250+ components” | **~144** `ResourceType` values in `factory_simulator/sim.py`; **~146** in `specs/default.spec` / bootstrap load |
 | “16 specialized modules” | **14** entries in `MODULE_SPECS` (power/control appear as products, not always as runtime module specs) |
 | “800–1200 days” replication | **Not reproduced** by a checked-in baseline run tied to current recipes |
 | “2–3× more resources than simplified models” | **Narrative only** — no coded A/B baseline multiplier |
