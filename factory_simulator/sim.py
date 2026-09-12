@@ -2906,33 +2906,46 @@ class EnergySystem:
         return max(0, actual_generation)
 
     def update_battery(self, energy_delta_kwh: float, duration_hours: float) -> float:
-        """Update battery; C-rate limits charge/discharge per hour of capacity."""
+        """Update battery with C-rate limits, round-trip efficiency, and health-scaled capacity.
+
+        energy_delta_kwh is AC-bus energy for the step (positive = surplus to store).
+        Round-trip efficiency is applied symmetrically via sqrt(RT) each way.
+        """
         duration_hours = max(duration_hours, 1e-9)
-        max_power_kwh = self.battery_capacity_kwh * self.c_rate * duration_hours
-        reserve = self.battery_capacity_kwh * 0.2
-        ceil = self.battery_capacity_kwh * 0.95
         health = self.get_battery_health()
         usable_capacity = self.battery_capacity_kwh * health
+        max_power_kwh = usable_capacity * self.c_rate * duration_hours
+        reserve = usable_capacity * 0.2
+        ceil = usable_capacity * 0.95
+
+        rt = self.config.get("battery_round_trip_efficiency")
+        if rt is None:
+            one_way = self.config.get("battery_efficiency", 0.95)
+        else:
+            one_way = math.sqrt(max(1e-6, min(1.0, float(rt))))
 
         if energy_delta_kwh > 0:
-            charge_rate = min(energy_delta_kwh, max_power_kwh)
-            eff = self.config.get("battery_efficiency", 0.95)
-            actual_charge = charge_rate * eff
-            room = max(0.0, min(ceil, usable_capacity * 0.95) - self.battery_charge_kwh)
-            actual_charge = min(actual_charge, room)
-            self.battery_charge_kwh += actual_charge
+            # Surplus on bus → store less in battery (charge losses)
+            ac_accepted = min(energy_delta_kwh, max_power_kwh)
+            stored = ac_accepted * one_way
+            room = max(0.0, ceil - self.battery_charge_kwh)
+            stored = min(stored, room)
+            self.battery_charge_kwh += stored
             if usable_capacity > 0:
-                self.battery_cycles += actual_charge / usable_capacity
+                self.battery_cycles += stored / usable_capacity
             self._recent_unmet = False
-            return actual_charge
+            return stored / one_way if one_way > 0 else 0.0  # AC energy absorbed
         else:
-            discharge_requested = abs(energy_delta_kwh)
-            available = max(0.0, self.battery_charge_kwh - reserve)
-            actual_discharge = min(discharge_requested, max_power_kwh, available)
-            self.battery_charge_kwh -= actual_discharge
+            # Deficit on bus → discharge more from battery than delivered
+            ac_needed = abs(energy_delta_kwh)
+            ac_deliverable_by_c_rate = max_power_kwh * one_way
+            available_ac = max(0.0, self.battery_charge_kwh - reserve) * one_way
+            delivered = min(ac_needed, ac_deliverable_by_c_rate, available_ac)
+            drawn = delivered / one_way if one_way > 0 else delivered
+            self.battery_charge_kwh -= drawn
             if usable_capacity > 0:
-                self.battery_cycles += actual_discharge / usable_capacity
-            return -actual_discharge
+                self.battery_cycles += drawn / usable_capacity
+            return -delivered
 
     def record_unmet(self, unmet_kwh: float) -> None:
         self.unmet_load_kwh += max(0.0, unmet_kwh)
@@ -2940,7 +2953,9 @@ class EnergySystem:
 
     def is_energy_constrained(self) -> bool:
         """True when plant should not start new active loads."""
-        reserve = self.battery_capacity_kwh * 0.2
+        health = self.get_battery_health()
+        usable_capacity = self.battery_capacity_kwh * health
+        reserve = usable_capacity * 0.2
         if self._recent_unmet:
             return True
         if self.battery_charge_kwh <= reserve + 1e-6:

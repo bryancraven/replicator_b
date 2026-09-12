@@ -17,13 +17,13 @@ See also: [REALISM.md](./REALISM.md)
 
 | ID | Item | Source | Owner | Status | Notes |
 |----|------|--------|-------|--------|-------|
-| P0-M1 | Bootstrap / seed profile (not one-of-every-module) | mfg | recipes + sim | done | `specs/bootstrap.spec` + `seed_modules` / `bootstrap_mode` in CONFIG |
-| P0-M2 | Fix wrong chemistry (acids, Pb/Sn precursors) | mfg | recipes + sim | done | Sulfur/salt/lead/tin ores; acid & metal recipes corrected |
-| P0-E1 | Single energy ledger (no double-count) | energy | sim | done | Task start no longer deducts battery; step accounts continuous load |
-| P0-E2 | HVAC / envelope cooling sized sanely | energy | sim | done | Conditioned fraction × W/m² instead of 0.1 kW/m² whole factory |
-| P0-E3 | Unmet electrical load blocks work | energy | sim | done | Shortage pauses new starts / can block active path |
-| P0-L1 | Transport gates production when enabled | logistics | sim | done | `awaiting_transport` until inbound jobs complete |
-| P0-L2 | Waste recycling credits storage inventory | logistics | sim | done | Recovered mass added to `storage` |
+| P0-M1 | Bootstrap / seed profile (not one-of-every-module) | mfg | recipes + sim | done | `specs/bootstrap.spec` + `bootstrap_mode` / `seed_modules` / `seed_resources` |
+| P0-M2 | Fix wrong chemistry (acids, Pb/Sn precursors) | mfg | recipes + sim | done | Sulfur/salt/water/lead/tin ores; acids & metals corrected in sim + `default_recipes.yaml` |
+| P0-E1 | Single energy ledger (no double-count) | energy | sim | done | Continuous kW×dt only; no task-start battery deduct |
+| P0-E2 | HVAC / envelope cooling sized sanely | energy | sim | done | Conditioned fraction × W/m² (~50 kW envelope vs ~570+ kW before) |
+| P0-E3 | Unmet electrical load blocks work | energy | sim | done | `record_unmet` / `is_energy_constrained` gates new starts |
+| P0-L1 | Transport gates production when enabled | logistics | sim | done | `blocked_transport` until inbound jobs complete (`require_transport_completion`) |
+| P0-L2 | Waste recycling credits storage inventory | logistics | sim | done | Recovered mass `storage.add_resource` |
 | P0-D1 | Honest component / module counts in docs | mfg + docs | docs | done | ~140 resources, 14 module specs — not “250+” |
 
 ---
@@ -32,13 +32,13 @@ See also: [REALISM.md](./REALISM.md)
 
 | ID | Item | Source | Owner | Status | Notes |
 |----|------|--------|-------|--------|-------|
-| P1-M3 | Multi-stage materials + realistic SEC (Si, Al, steel) | mfg | recipes | todo | Bayer/Hall–Héroult, MG-Si→poly→CZ, steel routes |
+| P1-M3 | Multi-stage materials + realistic SEC (Si, Al, steel) | mfg | recipes | todo | Partial SEC for steel/Al/Si via `effective_power_kw`; still one-step routes |
 | P1-M4 | Fab abstraction fix (ICs ≠ discrete transistor BOM) | mfg | recipes | todo | Wafer process steps / mask sets, not PCB-style assembly |
-| P1-M5 | Recipe energy/time authoritative (or drop vs module power) | mfg + energy | sim + recipes | todo | Unify `energy_kwh` with `power×time`; consistent units |
-| P1-E4 | Battery C-rate, RT efficiency, health→capacity | energy | sim | todo | Apply cycle health to usable kWh; duration-aware C-rate |
+| P1-M5 | Recipe energy/time authoritative (or drop vs module power) | mfg + energy | sim + recipes | doing | Critical materials use recipe energy → effective kW; unify rest |
+| P1-E4 | Battery C-rate, RT efficiency, health→capacity | energy | sim | doing | C-rate + health applied in `update_battery`; RT eff config still light |
 | P1-E5 | Solar + battery capacity grow from produced assets | energy + mfg | sim | todo | Completing `SOLAR_*` / `BATTERY_*` bumps nameplate |
-| P1-L3 | AGV maintenance recovery (escape maintenance state) | logistics | sim | doing | Was permanent stick; recovery timer added |
-| P1-L4 | Honor `enable_*` flags in sim paths | logistics | sim | doing | transport / thermal / waste / quality gates wired for P0 paths |
+| P1-L3 | AGV maintenance recovery (escape maintenance state) | logistics | sim | done | Timed `maintenance_end_time` recovery |
+| P1-L4 | Honor `enable_*` flags in sim paths | logistics | sim | doing | transport / thermal / waste gated on P0 paths; quality/capacity still partial |
 | P1-L5 | Thermal that bites (capacity & temps matter) | logistics | sim | todo | Lower cooling headroom; use module temps |
 
 ---
@@ -63,17 +63,17 @@ See also: [REALISM.md](./REALISM.md)
 
 | ID | Item | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| DOC-1 | Replace “250+ components” with measured enum/spec counts | docs | done | README + CLAUDE/SPEC touchpoints |
-| DOC-2 | Qualify “800–1200 days” / “2–3× resources” as unsupported | docs | todo | No reproducible baseline in-repo |
+| DOC-1 | Replace “250+ components” with measured enum/spec counts | docs | done | README, SPEC_FORMAT, default.spec metadata |
+| DOC-2 | Qualify “800–1200 days” / “2–3× resources” as unsupported | docs | done | README softened; REALISM.md documents gap |
 | DOC-3 | Keep REALISM.md + this backlog in sync after each P0/P1 land | docs | doing | Canonical pair |
 
 ---
 
 ## Implementation order (suggested)
 
-1. **P0 ledger + HVAC + unmet load** — energy numbers become trustworthy  
-2. **P0 transport gate + waste credit + enable flags** — ops constraints bite  
-3. **P0 chemistry + bootstrap + honest docs** — BOM and narrative match code  
+1. **P0 ledger + HVAC + unmet load** — energy numbers become trustworthy ✅  
+2. **P0 transport gate + waste credit + enable flags** — ops constraints bite ✅  
+3. **P0 chemistry + bootstrap + honest docs** — BOM and narrative match code ✅  
 4. **P1 capacity growth + SEC/fab + battery health** — replication question becomes meaningful  
 5. **P2 depth** — chemistry, cleanroom, software, metrology
 
@@ -83,4 +83,4 @@ See also: [REALISM.md](./REALISM.md)
 
 | Date | Change |
 |------|--------|
-| 2026-09-12 | Initial backlog merged from three critiques; P0 items implemented in engine/recipes/docs |
+| 2026-09-12 | Initial backlog merged from three critiques; P0 items implemented in engine/recipes/docs (coordinated with parallel P0 realism agent) |
